@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NegotiateHub - Backend Integration Complete!</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 3rem;
+        }
+        h1 {
+            color: #0ea5e9;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+        .success-badge {
+            display: inline-block;
+            background: #22c55e;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        p {
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        .status-section {
+            background: #f0f9ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 1.5rem;
+            border-radius: 6px;
+            margin: 2rem 0;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+        .checkmark {
+            color: #22c55e;
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-primary {
+            background: #0ea5e9;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0284c7;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(14, 165, 233, 0.3);
+        }
+        .btn-secondary {
+            background: #f0f9ff;
+            color: #0ea5e9;
+            border: 2px solid #0ea5e9;
+        }
+        .btn-secondary:hover {
+            background: #e0f2fe;
+        }
+        .info-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+        }
+        .api-status {
+            background: #f0fdf4;
+            border: 1px solid #22c55e;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        .code {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        h2 {
+            color: #1e293b;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        ul {
+            margin-left: 1.5rem;
+            color: #64748b;
+        }
+        li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-badge">✓ INTEGRATION COMPLETE</div>
+        <h1>🎉 NegotiateHub Ready!</h1>
+        <p>Your e-commerce platform with smart price negotiation is fully set up and running.</p>
+        
+        <div class="status-section">
+            <div class="status-item">
+                <span class="checkmark">✓</span>
+                <div>
+                    <strong>Backend Server</strong><br>
+                    <span style="font-size: 0.9rem; color: #64748b;">Running on http://localhost:5000</span>
+                </div>
+            </div>
+            <div class="status-item">
+                <span class="checkmark">✓</span>
+                <div>
+                    <strong>Database</strong><br>
+                    <span style="font-size: 0.9rem; color: #64748b;">10 sample products loaded</span>
+                </div>
+            </div>
+            <div class="status-item">
+                <span class="checkmark">✓</span>
+                <div>
+                    <strong>CORS Enabled</strong><br>
+                    <span style="font-size: 0.9rem; color: #64748b;">Cross-origin requests allowed</span>
+                </div>
+            </div>
+            <div class="status-item">
+                <span class="checkmark">✓</span>
+                <div>
+                    <strong>Negotiation API</strong><br>
+                    <span style="font-size: 0.9rem; color: #64748b;">ML-powered price negotiation ready</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <strong>⚠️ Important:</strong> Keep the backend terminal running. The frontend communicates with http://localhost:5000
+        </div>
+
+        <h2>Quick Start</h2>
+        <p>Open the frontend website to start shopping and negotiating prices:</p>
+        
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="openFrontend()">
+                🌐 Open Frontend (Local File)
+            </button>
+            <button class="btn btn-secondary" onclick="testAPI()">
+                🧪 Test API Connection
+            </button>
+        </div>
+
+        <div class="api-status" id="api-status" style="display: none;">
+            <strong>API Status:</strong> <span id="status-text"></span>
+        </div>
+
+        <h2>API Endpoints Available</h2>
+        <ul>
+            <li><code>GET /products/</code> - List all products</li>
+            <li><code>GET /api/health</code> - Health check</li>
+            <li><code>POST /chatbot/</code> - Price negotiation negotiation</li>
+        </ul>
+
+        <h2>Sample Product Data</h2>
+        <p>The system comes with 10 pre-loaded products:</p>
+        <ul>
+            <li>Wireless Headphones - $79.99</li>
+            <li>USB-C Cable - $12.99</li>
+            <li>Cotton T-Shirt - $24.99</li>
+            <li>Coffee Maker - $45.99</li>
+            <li>Running Shoes - $89.99</li>
+            <li>Programming Book - $34.99</li>
+            <li>Laptop Bag - $59.99</li>
+            <li>Desk Lamp - $35.99</li>
+            <li>Yoga Mat - $29.99</li>
+            <li>Smartphone Case - $19.99</li>
+        </ul>
+
+        <h2>Features</h2>
+        <ul>
+            <li>✅ Real product listing from backend</li>
+            <li>✅ Smart price negotiation with ML models</li>
+            <li>✅ Interactive shopping cart</li>
+            <li>✅ Real-time negotiation chatbot</li>
+            <li>✅ Product filtering and sorting</li>
+            <li>✅ LocalStorage for cart persistence</li>
+        </ul>
+    </div>
+
+    <script>
+        function openFrontend() {
+            const frontendPath = 'file:///c:/Users/mdkam/Downloads/project/frontend/index.html';
+            window.open(frontendPath, '_blank');
+        }
+
+        async function testAPI() {
+            const statusDiv = document.getElementById('api-status');
+            const statusText = document.getElementById('status-text');
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/health');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusText.innerHTML = '✅ Connected! Backend is running and responding correctly.';
+                    statusDiv.style.background = '#f0fdf4';
+                    statusDiv.style.borderColor = '#22c55e';
+                    statusDiv.style.color = '#15803d';
+                } else {
+                    throw new Error('Backend returned error');
+                }
+            } catch (error) {
+                statusText.innerHTML = '❌ Connection failed. Make sure backend is running on http://localhost:5000';
+                statusDiv.style.background = '#fef2f2';
+                statusDiv.style.borderColor = '#ef4444';
+                statusDiv.style.color = '#991b1b';
+            }
+            statusDiv.style.display = 'block';
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            setTimeout(testAPI, 500);
+        });
+    </script>
+</body>
+</html>

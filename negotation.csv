@@ -1,0 +1,139 @@
+"Product ID 
+int64
+
+1
+10k","Product Name 
+stringclasses
+
+384 values","Description 
+stringlengths
+
+116
+202","Price 
+float64
+
+10
+300","Negotiable 
+bool
+
+2 classes","Discount (%) 
+int64
+
+0
+30","Negotiated Price 
+float64
+
+7.47
+300","Size 
+stringclasses
+
+5 values","Category 
+stringclasses
+
+8 values","Color 
+stringclasses
+
+8 values","Material 
+stringclasses
+
+6 values"
+1,Black Polyester Pants,This black polyester pants is crafted with premium quality materials for durability and style. Better middle idea visit position response nature.,138.94,FALSE,0,138.94,XL,Pants,Black,Polyester
+2,Black Cotton Pants,This black cotton pants is crafted with premium quality materials for durability and style. City summer station contain citizen issue expect.,222.04,TRUE,10,199.84,M,Pants,Black,Cotton
+3,White Leather Socks,This white leather socks is crafted with premium quality materials for durability and style. Indicate step to church room behavior door nor believe individual gas physical.,48.5,FALSE,0,48.5,M,Socks,White,Leather
+4,Blue Silk Hat,This blue silk hat is crafted with premium quality materials for durability and style. Agent police right reality he last.,85.31,FALSE,0,85.31,XXL,Hat,Blue,Silk
+5,Gray Wool Dress,This gray wool dress is crafted with premium quality materials for durability and style. Whether find husband issue security standard receive amount leg order stock choose.,68.03,TRUE,9,61.91,XL,Dress,Gray,Wool
+6,Red Silk Shoes,This red silk shoes is crafted with premium quality materials for durability and style. Less personal sure itself reduce there pick own save according.,93.09,FALSE,0,93.09,M,Shoes,Red,Silk
+7,White Leather Shirt,This white leather shirt is crafted with premium quality materials for durability and style. Director than light here series cause.,286.32,FALSE,0,286.32,XXL,Shirt,White,Leather
+8,Black Polyester Hat,This black polyester hat is crafted with premium quality materials for durability and style. Space piece before social how season himself down together strategy.,166.05,FALSE,0,166.05,L,Hat,Black,Polyester
+9,Yellow Denim Pants,This yellow denim pants is crafted with premium quality materials for durability and style. Teach note eight week civil its pay evidence plant class effort.,74.33,FALSE,0,74.33,L,Pants,Yellow,Denim
+10,Green Silk Pants,This green silk pants is crafted with premium quality materials for durability and style. Most finally let door project traditional upon chance opportunity can half although themselves.,208.83,TRUE,26,154.53,L,Pants,Green,Silk
+11,Blue Cotton Shirt,This blue cotton shirt is crafted with premium quality materials for durability and style. Quickly travel talk job last key.,109.26,FALSE,0,109.26,XXL,Shirt,Blue,Cotton
+12,White Wool Shirt,This white wool shirt is crafted with premium quality materials for durability and style. Off blue quickly across enter local single store person game.,269.3,FALSE,0,269.3,XL,Shirt,White,Wool
+13,Gray Polyester Dress,This gray polyester dress is crafted with premium quality materials for durability and style. For information need bill red fly general last class.,289.2,TRUE,17,240.04,S,Dress,Gray,Polyester
+14,Blue Leather Jacket,This blue leather jacket is crafted with premium quality materials for durability and style. Feel rather lose animal teacher article page term paper sea allow.,42.88,TRUE,9,39.02,S,Jacket,Blue,Leather
+15,Red Silk Dress,This red silk dress is crafted with premium quality materials for durability and style. Power away sign the although executive company down.,106.69,TRUE,7,99.22,L,Dress,Red,Silk
+16,Blue Wool Scarf,This blue wool scarf is crafted with premium quality materials for durability and style. Rich paper memory its former your front lay each ever south.,238.25,TRUE,18,195.37,L,Scarf,Blue,Wool
+17,Red Polyester Socks,This red polyester socks is crafted with premium quality materials for durability and style. Cut book imagine ball citizen past avoid.,258.14,TRUE,20,206.51,XXL,Socks,Red,Polyester
+18,Yellow Cotton Pants,This yellow cotton pants is crafted with premium quality materials for durability and style. Three poor current him good anything adult.,27.06,TRUE,25,20.29,XXL,Pants,Yellow,Cotton
+19,Black Silk Dress,This black silk dress is crafted with premium quality materials for durability and style. Then vote how decade usually take.,214.73,TRUE,20,171.78,M,Dress,Black,Silk
+20,White Cotton Socks,This white cotton socks is crafted with premium quality materials for durability and style. Mind treatment behind that theory talk.,63.59,TRUE,29,45.15,XXL,Socks,White,Cotton
+21,Black Wool Shirt,This black wool shirt is crafted with premium quality materials for durability and style. Production front reflect anything center her road.,167.02,FALSE,0,167.02,XXL,Shirt,Black,Wool
+22,White Wool Scarf,This white wool scarf is crafted with premium quality materials for durability and style. Appear product TV dream assume against them.,286.09,FALSE,0,286.09,S,Scarf,White,Wool
+23,Yellow Cotton Scarf,This yellow cotton scarf is crafted with premium quality materials for durability and style. Future natural education scene discuss when father line billion partner fast church.,168.66,FALSE,0,168.66,L,Scarf,Yellow,Cotton
+24,Green Leather Hat,This green leather hat is crafted with premium quality materials for durability and style. Total similar simply dinner debate company member.,289.87,TRUE,6,272.48,XL,Hat,Green,Leather
+25,Brown Denim Dress,This brown denim dress is crafted with premium quality materials for durability and style. About media event difference region report politics buy nature bring capital.,27.75,FALSE,0,27.75,XL,Dress,Brown,Denim
+26,White Cotton Socks,This white cotton socks is crafted with premium quality materials for durability and style. National his guy deep season article garden different voice message foot.,12.58,TRUE,27,9.18,L,Socks,White,Cotton
+27,Brown Leather Jacket,This brown leather jacket is crafted with premium quality materials for durability and style. As act follow type within despite what positive arrive choice interest.,64.51,TRUE,7,59.99,XXL,Jacket,Brown,Leather
+28,Brown Polyester Hat,This brown polyester hat is crafted with premium quality materials for durability and style. Necessary assume everyone down politics past break partner doctor move window.,109.71,FALSE,0,109.71,L,Hat,Brown,Polyester
+29,Yellow Wool Socks,This yellow wool socks is crafted with premium quality materials for durability and style. Anyone perform spend position however black give unit.,271.66,TRUE,22,211.89,XXL,Socks,Yellow,Wool
+30,Gray Leather Socks,This gray leather socks is crafted with premium quality materials for durability and style. Physical thing drive affect woman detail develop at hope pretty indicate hand.,83.33,TRUE,17,69.16,XL,Socks,Gray,Leather
+31,Blue Denim Scarf,This blue denim scarf is crafted with premium quality materials for durability and style. Generation must run eight other scene hard officer challenge policy during game himself.,293.1,FALSE,0,293.1,XXL,Scarf,Blue,Denim
+32,Black Polyester Hat,This black polyester hat is crafted with premium quality materials for durability and style. Play any second fine sing weight clear general admit per stand open chance.,172.48,FALSE,0,172.48,XL,Hat,Black,Polyester
+33,Brown Polyester Dress,This brown polyester dress is crafted with premium quality materials for durability and style. Ground medical too key west enjoy read.,233.05,TRUE,18,191.1,S,Dress,Brown,Polyester
+34,Gray Leather Dress,This gray leather dress is crafted with premium quality materials for durability and style. Yourself western central rather as before.,166.39,FALSE,0,166.39,XL,Dress,Gray,Leather
+35,Yellow Silk Shirt,This yellow silk shirt is crafted with premium quality materials for durability and style. Themselves hot fine cold by so data check day clearly.,115.36,FALSE,0,115.36,L,Shirt,Yellow,Silk
+36,Gray Polyester Socks,This gray polyester socks is crafted with premium quality materials for durability and style. By interesting enjoy well especially specific reason account.,288.12,TRUE,20,230.5,XL,Socks,Gray,Polyester
+37,Red Cotton Jacket,This red cotton jacket is crafted with premium quality materials for durability and style. Myself little truth information part arm wait finish law.,127.91,FALSE,0,127.91,S,Jacket,Red,Cotton
+38,Black Polyester Dress,This black polyester dress is crafted with premium quality materials for durability and style. Race debate turn effect learn seek cost attorney will movie.,75.84,TRUE,16,63.71,M,Dress,Black,Polyester
+39,Brown Polyester Jacket,This brown polyester jacket is crafted with premium quality materials for durability and style. Some around officer staff return six field support thought support bar.,21.05,TRUE,27,15.37,M,Jacket,Brown,Polyester
+40,White Polyester Pants,This white polyester pants is crafted with premium quality materials for durability and style. Believe they low last western common remain important.,289.26,TRUE,10,260.33,M,Pants,White,Polyester
+41,Black Polyester Dress,This black polyester dress is crafted with premium quality materials for durability and style. Well financial interesting what either job bar.,40.54,FALSE,0,40.54,L,Dress,Black,Polyester
+42,Gray Cotton Pants,This gray cotton pants is crafted with premium quality materials for durability and style. Type agent interesting remain son resource list.,82.62,FALSE,0,82.62,XXL,Pants,Gray,Cotton
+43,Black Wool Scarf,This black wool scarf is crafted with premium quality materials for durability and style. Even expert spend arrive family grow able affect road he alone perhaps six.,150.06,FALSE,0,150.06,S,Scarf,Black,Wool
+44,White Cotton Scarf,This white cotton scarf is crafted with premium quality materials for durability and style. Agree degree sister wind pass stop future keep.,117.63,FALSE,0,117.63,XL,Scarf,White,Cotton
+45,Black Wool Scarf,This black wool scarf is crafted with premium quality materials for durability and style. Program dinner red miss than will.,151.72,FALSE,0,151.72,S,Scarf,Black,Wool
+46,White Polyester Dress,This white polyester dress is crafted with premium quality materials for durability and style. Truth there onto onto contain whose citizen police range option turn star over.,35.36,FALSE,0,35.36,XXL,Dress,White,Polyester
+47,White Silk Hat,This white silk hat is crafted with premium quality materials for durability and style. Begin animal certain manage than political card prove most involve range.,125.88,FALSE,0,125.88,XL,Hat,White,Silk
+48,White Silk Shoes,This white silk shoes is crafted with premium quality materials for durability and style. Loss fund allow page walk fact month natural eight front ask stage.,122.98,TRUE,11,109.45,S,Shoes,White,Silk
+49,Red Denim Pants,This red denim pants is crafted with premium quality materials for durability and style. Court opportunity enter water nearly gun choice recent million knowledge magazine.,184.18,TRUE,7,171.29,XL,Pants,Red,Denim
+50,Red Leather Shoes,This red leather shoes is crafted with premium quality materials for durability and style. Inside two general do see off quite push government.,176.47,FALSE,0,176.47,L,Shoes,Red,Leather
+51,Red Cotton Dress,This red cotton dress is crafted with premium quality materials for durability and style. Cold enter either level forward loss four their what past conference finish teach.,260.35,TRUE,26,192.66,M,Dress,Red,Cotton
+52,Gray Denim Shoes,This gray denim shoes is crafted with premium quality materials for durability and style. Quality real able mother hope girl.,118.5,FALSE,0,118.5,L,Shoes,Gray,Denim
+53,Black Denim Scarf,This black denim scarf is crafted with premium quality materials for durability and style. Blood city heavy eight section already song involve fill suddenly.,169.7,FALSE,0,169.7,S,Scarf,Black,Denim
+54,White Leather Socks,This white leather socks is crafted with premium quality materials for durability and style. Increase truth model hard next future establish join certain.,37.78,FALSE,0,37.78,XL,Socks,White,Leather
+55,Yellow Denim Pants,This yellow denim pants is crafted with premium quality materials for durability and style. Stuff pressure factor degree within admit think nature street about newspaper.,177.03,TRUE,26,131,M,Pants,Yellow,Denim
+56,White Leather Scarf,This white leather scarf is crafted with premium quality materials for durability and style. Deep front brother picture throw break less owner institution catch share need.,122.05,TRUE,23,93.98,XXL,Scarf,White,Leather
+57,Black Wool Shirt,This black wool shirt is crafted with premium quality materials for durability and style. Edge country hour yes student none.,274.27,TRUE,22,213.93,M,Shirt,Black,Wool
+58,Black Leather Hat,This black leather hat is crafted with premium quality materials for durability and style. Group rich action heart manage example condition.,92.79,FALSE,0,92.79,XXL,Hat,Black,Leather
+59,Red Denim Shirt,This red denim shirt is crafted with premium quality materials for durability and style. Way so drive control best guy receive partner and two.,21.99,TRUE,14,18.91,S,Shirt,Red,Denim
+60,Red Wool Hat,This red wool hat is crafted with premium quality materials for durability and style. Current near manage recent same program light student.,220.71,FALSE,0,220.71,S,Hat,Red,Wool
+61,Green Polyester Hat,This green polyester hat is crafted with premium quality materials for durability and style. Red executive may win ok worker know necessary coach finally job.,180.91,TRUE,13,157.39,XL,Hat,Green,Polyester
+62,Yellow Leather Socks,This yellow leather socks is crafted with premium quality materials for durability and style. Through skin school summer foot inside unit security newspaper industry voice purpose draw.,194.05,FALSE,0,194.05,XXL,Socks,Yellow,Leather
+63,Brown Polyester Scarf,This brown polyester scarf is crafted with premium quality materials for durability and style. Operation bad evening mind what candidate need like road.,10.84,TRUE,12,9.54,L,Scarf,Brown,Polyester
+64,White Denim Pants,This white denim pants is crafted with premium quality materials for durability and style. Series life realize trial might issue raise explain check treatment special move.,175.58,FALSE,0,175.58,L,Pants,White,Denim
+65,Brown Cotton Shirt,This brown cotton shirt is crafted with premium quality materials for durability and style. Despite beat husband religious much mention newspaper real add.,164.45,FALSE,0,164.45,S,Shirt,Brown,Cotton
+66,Green Wool Hat,This green wool hat is crafted with premium quality materials for durability and style. Recently author fall teacher only candidate though party.,50.18,FALSE,0,50.18,M,Hat,Green,Wool
+67,Brown Polyester Jacket,This brown polyester jacket is crafted with premium quality materials for durability and style. Medical sport leave fast major soldier space local physical cultural.,125.3,FALSE,0,125.3,XXL,Jacket,Brown,Polyester
+68,Red Wool Scarf,This red wool scarf is crafted with premium quality materials for durability and style. Before get create onto development stay decision human statement actually current very.,25.92,TRUE,11,23.07,S,Scarf,Red,Wool
+69,Gray Silk Socks,This gray silk socks is crafted with premium quality materials for durability and style. Ball attorney cold reduce must two reflect leave.,271.26,TRUE,9,246.85,L,Socks,Gray,Silk
+70,Yellow Wool Jacket,This yellow wool jacket is crafted with premium quality materials for durability and style. General suffer none reduce across another plant threat rate item realize sure wind.,122.91,FALSE,0,122.91,XXL,Jacket,Yellow,Wool
+71,Brown Denim Pants,This brown denim pants is crafted with premium quality materials for durability and style. Military recognize life worker budget point risk.,207.77,TRUE,29,147.52,XXL,Pants,Brown,Denim
+72,Blue Cotton Jacket,This blue cotton jacket is crafted with premium quality materials for durability and style. Watch culture often behind whatever none give.,188.48,TRUE,29,133.82,S,Jacket,Blue,Cotton
+73,Brown Polyester Jacket,This brown polyester jacket is crafted with premium quality materials for durability and style. Tend show hair prevent father effort whole.,285.06,FALSE,0,285.06,M,Jacket,Brown,Polyester
+74,Green Silk Hat,This green silk hat is crafted with premium quality materials for durability and style. Draw adult blood career let side.,273.73,TRUE,7,254.57,M,Hat,Green,Silk
+75,White Leather Hat,This white leather hat is crafted with premium quality materials for durability and style. Level spring learn though art author.,95.95,TRUE,24,72.92,XL,Hat,White,Leather
+76,Blue Cotton Dress,This blue cotton dress is crafted with premium quality materials for durability and style. Song scientist stand heart different player pay seem.,245.75,TRUE,14,211.34,L,Dress,Blue,Cotton
+77,Green Wool Shirt,This green wool shirt is crafted with premium quality materials for durability and style. Receive serious wife wait once school money much total stock pretty or nearly night.,27.32,FALSE,0,27.32,M,Shirt,Green,Wool
+78,White Wool Pants,This white wool pants is crafted with premium quality materials for durability and style. Foot stuff poor art whose class about likely reality eat actually such.,103.39,TRUE,15,87.88,L,Pants,White,Wool
+79,Red Cotton Shoes,This red cotton shoes is crafted with premium quality materials for durability and style. Center amount major myself everybody prove rate why along.,125.17,FALSE,0,125.17,XXL,Shoes,Red,Cotton
+80,Black Cotton Socks,This black cotton socks is crafted with premium quality materials for durability and style. Well once big police foot to use ahead our.,211.18,FALSE,0,211.18,XXL,Socks,Black,Cotton
+81,Blue Polyester Scarf,This blue polyester scarf is crafted with premium quality materials for durability and style. Behind example before popular summer against simply.,102.29,FALSE,0,102.29,XL,Scarf,Blue,Polyester
+82,Gray Leather Pants,This gray leather pants is crafted with premium quality materials for durability and style. Political what music almost game single discuss your case draw rock decide culture.,53.07,FALSE,0,53.07,M,Pants,Gray,Leather
+83,Brown Silk Pants,This brown silk pants is crafted with premium quality materials for durability and style. Four particular best argue purpose scene second force TV thank speak.,247.15,FALSE,0,247.15,M,Pants,Brown,Silk
+84,Green Denim Hat,This green denim hat is crafted with premium quality materials for durability and style. Tax trouble network all little toward item then financial according a.,157.09,FALSE,0,157.09,L,Hat,Green,Denim
+85,White Denim Shirt,This white denim shirt is crafted with premium quality materials for durability and style. Training choice yet believe probably they again type fall too determine everybody.,276.15,TRUE,6,259.58,M,Shirt,White,Denim
+86,Yellow Polyester Scarf,This yellow polyester scarf is crafted with premium quality materials for durability and style. Meeting leg visit change present paper again science early.,139.5,TRUE,13,121.36,L,Scarf,Yellow,Polyester
+87,Red Denim Shoes,This red denim shoes is crafted with premium quality materials for durability and style. Candidate poor get form modern cut.,23.92,FALSE,0,23.92,XL,Shoes,Red,Denim
+88,Brown Polyester Dress,This brown polyester dress is crafted with premium quality materials for durability and style. No plant student save market college pressure image vote positive protect.,167.11,FALSE,0,167.11,L,Dress,Brown,Polyester
+89,Yellow Wool Hat,This yellow wool hat is crafted with premium quality materials for durability and style. Protect own sure argue garden thousand sense candidate difference recently table chance what.,223.6,TRUE,23,172.17,L,Hat,Yellow,Wool
+90,Blue Wool Hat,This blue wool hat is crafted with premium quality materials for durability and style. Perform bit style such major position city human no.,183.76,TRUE,19,148.85,XL,Hat,Blue,Wool
+91,Gray Polyester Scarf,This gray polyester scarf is crafted with premium quality materials for durability and style. Town bar view statement growth feel floor loss top goal.,264.1,FALSE,0,264.1,S,Scarf,Gray,Polyester
+92,Yellow Polyester Pants,This yellow polyester pants is crafted with premium quality materials for durability and style. Shake scene rock television wall purpose else thousand machine interview.,141.88,FALSE,0,141.88,S,Pants,Yellow,Polyester
+93,Brown Cotton Hat,This brown cotton hat is crafted with premium quality materials for durability and style. Best whole according nation along short contain.,131.55,FALSE,0,131.55,M,Hat,Brown,Cotton
+94,Gray Polyester Hat,This gray polyester hat is crafted with premium quality materials for durability and style. Far service large though successful find red enjoy eight rather attack difference.,282.71,TRUE,9,257.27,XL,Hat,Gray,Polyester
+95,Black Silk Dress,This black silk dress is crafted with premium quality materials for durability and style. Computer carry report sometimes once resource send chair night wonder fire store also yet.,144.62,FALSE,0,144.62,XXL,Dress,Black,Silk
+96,Gray Wool Shoes,This gray wool shoes is crafted with premium quality materials for durability and style. Believe feel how hot daughter step available not price article know.,274.01,TRUE,28,197.29,XXL,Shoes,Gray,Wool
+97,White Silk Pants,This white silk pants is crafted with premium quality materials for durability and style. Blue character three chair adult see around.,63.15,FALSE,0,63.15,XL,Pants,White,Silk
+98,Black Leather Shirt,This black leather shirt is crafted with premium quality materials for durability and style. Perform accept another shake community spring any.,124.67,FALSE,0,124.67,XL,Shirt,Black,Leather
+99,White Wool Dress,This white wool dress is crafted with premium quality materials for durability and style. Film sound return gun church natural land support language.,165.26,TRUE,22,128.9,M,Dress,White,Wool
+100,Green Leather Pants,This green leather pants is crafted with premium quality materials for durability and style. Avoid market relate degree standard memory look power my cultural plan.,143.02,TRUE,24,108.7,L,Pants,Green,Leather

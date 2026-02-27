@@ -1,0 +1,37 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Products</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>Product Listing</h1>
+    </header>
+
+    <main class="container">
+      <section>
+        <div id="status" class="status">Loading products...</div>
+        <div id="product-grid" class="grid"></div>
+      </section>
+    </main>
+
+    <button id="chat-toggle" class="chat-toggle">Chat</button>
+
+    <div id="chat-popup" class="chat-popup">
+      <div class="chat-header">
+        <span>Negotiation Chatbot</span>
+        <button id="chat-close" class="chat-close">×</button>
+      </div>
+      <div id="chat-messages" class="chat-messages"></div>
+      <div class="chat-input">
+        <input id="chat-text" type="text" placeholder="Type your message..." />
+        <button id="chat-send">Send</button>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  </body>
+</html>
