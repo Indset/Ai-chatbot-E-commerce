@@ -87,13 +87,130 @@ function money(v) {
   return `$${Number(v || 0).toFixed(2)}`;
 }
 
+// Smart image matcher — product name ke keywords se image file dhundta hai
+// Tumhari actual image files ka naam yahan likho (extension ke saath)
+const IMAGE_FILES = [
+  "Backpack.webp",
+  "Bedsheet Set.webp",
+  "Blender.png",
+  "Bluetooth Spe.webp",
+  "book.png",
+  "Bookshelf.webp",
+  "Cloud Comput.webp",
+  "coffee maker.jpg",
+  "Comforter.webp",
+  "Curtains.webp",
+  "data cable.jpeg",
+  "Database Desi.webp",
+  "Desk Chair.jpg",
+  "Dumbbell Set.webp",
+  "Electric Kettle.jpg",
+  "Graphics Card.webp",
+  "Gym Bag.avif",
+  "Hoodie.webp",
+  "JavaScript Guide.jpg",
+  "Jeans.webp",
+  "lamp.webp",
+  "laptop bag.jpg",
+  "Leather Belt.jpg",
+  "Mechanical Keyboard.webp",
+  "Microwave.avif",
+  "Mirror.webp",
+  "Monitor.webp",
+  "Mouse Pad.webp",
+  "Phone Stand.jpg",
+  "Pillow Set.avif",
+  "Power Bank 20000mAh.webp",
+  "Python Programming.png",
+  "RAM 16GB.jpg",
+ "Resistance Bands.webp",
+"Screen Protector.webp",
+"shoes.webp",
+"Smartphone Case.webp",
+"Sports Socks Set.jpg",
+"SSD 1TB.jpg",
+"Sunglasses.avif",
+"Toaster.webp",
+"tshirt.png",
+"USB Hub.webp",
+"Vacuum Cleaner.webp",
+"Watch.webp",
+"Water Bottle.webp",
+"Webcam 1080p.webp",
+"Winter Jacket.webp",
+"wireless headphone.webp",
+"yoga_mat.jpg"
+];
+  // ── Apni baaki images yahan add karo ──
+
+// Keyword → image file mapping (product name mein ye word mile toh ye image use karo)
+const KEYWORD_MAP = [
+  { keys: ["headphone", "wireless", "bluetooth", "speaker", "audio"],  file: "Bluetooth Spe.webp" },
+  { keys: ["cable", "usb", "charging", "wire", "data"],                file: "data cable.jpeg" },
+  { keys: ["shirt", "tshirt", "t-shirt", "top", "clothing"],           file: "book.png" },
+  { keys: ["coffee", "maker", "brewer", "kettle", "kitchen"],          file: "coffee maker.jpg" },
+  { keys: ["shoe", "running", "sneaker", "footwear", "boot"],          file: "Backpack.webp" },
+  { keys: ["book", "programming", "guide", "novel", "read"],           file: "book.png" },
+  { keys: ["bag", "laptop bag", "backpack", "carry", "pack"],          file: "Backpack.webp" },
+  { keys: ["lamp", "light", "desk lamp", "bulb", "led"],               file: "Desk Chair.jpg" },
+  { keys: ["yoga", "mat", "exercise", "fitness", "gym"],               file: "Dumbbell Set.webp" },
+  { keys: ["phone", "smartphone", "mobile", "case", "cover"],          file: "Bluetooth Spe.webp" },
+  { keys: ["dumbbell", "weight", "barbell", "lifting"],                file: "Dumbbell Set.webp" },
+  { keys: ["chair", "desk", "seat", "office", "furniture"],            file: "Desk Chair.jpg" },
+  { keys: ["bedsheet", "sheet", "pillow", "bed", "linen"],             file: "Bedsheet Set.webp" },
+  { keys: ["comforter", "blanket", "quilt", "duvet"],                  file: "Comforter.webp" },
+  { keys: ["curtain", "drape", "window", "blind"],                     file: "Curtains.webp" },
+  { keys: ["bookshelf", "shelf", "rack", "storage"],                   file: "Bookshelf.webp" },
+  { keys: ["blender", "mixer", "juicer", "grinder"],                   file: "Blender.png" },
+  { keys: ["graphics", "gpu", "video card", "gaming"],                 file: "Graphics Card.webp" },
+  { keys: ["cloud", "storage", "server", "hosting", "database"],       file: "Cloud Comput.webp" },
+  { keys: ["electric", "kettle", "water heater"],                      file: "Electric Kettle.jpg" },
+];
+
+// Cache — same product baar baar match na kare
+const _imgCache = {};
+
+function getProductImage(productId, productName) {
+  const cacheKey = String(productId);
+  if (_imgCache[cacheKey]) return _imgCache[cacheKey];
+
+  const nameLower = (productName || '').toLowerCase();
+
+  // Keyword match
+  for (const { keys, file } of KEYWORD_MAP) {
+    if (keys.some(k => nameLower.includes(k))) {
+      const path = `image/${file}`;
+      _imgCache[cacheKey] = path;
+      return path;
+    }
+  }
+
+  // Fallback — pehli available image
+  if (IMAGE_FILES.length > 0) {
+    const idx = Number(productId) % IMAGE_FILES.length;
+    const path = `image/${IMAGE_FILES[idx]}`;
+    _imgCache[cacheKey] = path;
+    return path;
+  }
+
+  return 'image/placeholder.jpg';
+}
+
 function ProductCard({ product, onDetail, onAdd, onNegotiate }) {
+  const imageUrl = getProductImage(product.product_id || product.id, product.name);
+
   return (
     <div className="product-card">
       <div className="product-image">
-        <div className="product-image-placeholder" style={{ width: '100%', height: '160px', background: '#f0f0f0', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999', marginBottom: '0.5rem' }}>
-          Image
-        </div>
+        <img
+          src={imageUrl}
+          alt={product.name}
+          style={{ width: '100%', height: '160px', objectFit: 'cover', borderRadius: '8px', marginBottom: '0.5rem' }}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = 'images/placeholder.jpg';
+          }}
+        />
       </div>
       <div className="product-content">
         <span className="product-category">{product.category}</span>
@@ -204,7 +321,8 @@ function App() {
           price: Number(row['Price']) || 0,
           category: row['Category'] || 'General',
           discount_percent: Number(row['Discount (%)']) || 0,
-          negotiation_available: String(row['Negotiable']).toUpperCase() === 'TRUE'
+          negotiation_available: String(row['Negotiable']).toUpperCase() === 'TRUE',
+          image: row['Image'] || ''
         }));
       } catch (e) {
         continue;
@@ -515,9 +633,12 @@ function App() {
         <div id="home-product-preview" style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', width: '100%', padding: '0 1rem' }}>
           {products.slice(0, 6).map(p => (
             <div key={p.product_id} style={{ minWidth: '220px', padding: '0.75rem', background: '#fff', borderRadius: '8px', boxShadow: '0 4px 12px rgba(2,6,23,0.06)' }}>
-              <div style={{ fontWeight: 700 }}>{p.name}</div>
-              <div style={{ marginTop: '0.5rem' }}>{money(p.price)}</div>
-              <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.4rem' }}>
+              {p.image && (
+                <img src={`${API_BASE}/static/images/${p.image}`} alt={p.name} style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '6px', marginBottom: '0.5rem' }} onError={(e) => { e.style.display = 'none'; }} />
+              )}
+              <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{p.name}</div>
+              <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#666' }}>{money(p.price)}</div>
+              <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                 <button className="btn btn-small" onClick={() => setDetailProduct(p)}>Details</button>
                 <button className="btn btn-small" onClick={() => startNegotiation(p)}>Negotiate</button>
               </div>
@@ -606,7 +727,11 @@ function App() {
         <div className="deals-grid">
           {deals.map(deal => (
             <div className="deal-card" key={deal.product_id}>
-              <div className="product-image-placeholder" style={{ width: '100%', height: '180px', background: '#f0f0f0', borderRadius: '6px', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>Image</div>
+              {deal.image ? (
+                <img src={`${API_BASE}/static/images/${deal.image}`} alt={deal.name} style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '6px', marginBottom: '0.5rem' }} onError={(e) => { e.style.display = 'none'; }} />
+              ) : (
+                <div className="product-image-placeholder" style={{ width: '100%', height: '180px', background: '#f0f0f0', borderRadius: '6px', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>No Image</div>
+              )}
               <h3>{deal.name}</h3>
               <div className="price-section">
                 <span className="original-price">Was: {money(deal.original_price)}</span>
@@ -680,7 +805,12 @@ function App() {
           {detailProduct && (
             <div className="product-detail-container">
               <div className="product-image-section">
-                <div style={{ width: '100%', height: '300px', background: '#e2e8f0', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px', color: '#64748b' }}>Image</div>
+                <img
+                  src={getProductImage(detailProduct.product_id || detailProduct.id, detailProduct.name)}
+                  alt={detailProduct.name}
+                  style={{ width: '100%', height: '300px', objectFit: 'cover', borderRadius: '8px' }}
+                  onError={(e) => { e.target.onerror = null; e.target.src = 'images/placeholder.jpg'; }}
+                />
               </div>
               <div className="product-info">
                 <div className="detail-header">
