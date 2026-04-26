@@ -1,19 +1,5 @@
-﻿// ===== STATE MANAGEMENT =====
-let products = [];
-let cart = [];
-let currentProduct = null;
-let currentNegotiation = null;
+const { useEffect, useMemo, useState } = React;
 
-// ===== INITIALIZATION =====
-document.addEventListener('DOMContentLoaded', () => {
-  fetchProducts();
-  setupEventListeners();
-  loadCartFromStorage();
-  setupAIChatWidget();
-  setupAuthUI();
-});
-
-// API base derived from current host to support multiple frontend servers (5500, 8000, etc.)
 const API_BASE = (() => {
   try {
     const host = location.hostname || 'localhost';
@@ -23,447 +9,14 @@ const API_BASE = (() => {
   }
 })();
 
-function setupEventListeners() {
-  // Filters
-  document.querySelectorAll('.category-filter').forEach(checkbox => {
-    checkbox.addEventListener('change', applyFilters);
-  });
-  
-  document.querySelectorAll('.negotiation-filter').forEach(checkbox => {
-    checkbox.addEventListener('change', applyFilters);
-  });
-
-  document.getElementById('price-range').addEventListener('input', (e) => {
-    document.getElementById('price-value').textContent = '$' + e.target.value;
-    applyFilters();
-  });
-
-  document.getElementById('sort-select').addEventListener('change', () => {
-    displayProducts(products);
-  });
-
-  // Cart Modal
-  document.getElementById('cart-btn').addEventListener('click', openCart);
-
-  // Chat
-  document.getElementById('chat-send').addEventListener('click', sendChatMessage);
-  document.getElementById('chat-text').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendChatMessage();
-  });
-
-  // Offer 
-  document.getElementById('offer-price').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') makeOffer();
-  });
-}
-
-// ===== AI CHAT WIDGET =====
-function setupAIChatWidget() {
-  const openBtn = document.getElementById('ai-chat-open');
-  const closeBtn = document.getElementById('ai-chat-close');
-  const exitBtn = document.getElementById('ai-chat-exit');
-  const sendBtn = document.getElementById('ai-chat-send');
-
-  if (openBtn) openBtn.addEventListener('click', openAIChat);
-  if (closeBtn) closeBtn.addEventListener('click', closeAIChat);
-  if (exitBtn) exitBtn.addEventListener('click', exitAIChat);
-  if (sendBtn) sendBtn.addEventListener('click', sendAIChatMessage);
-
-  const input = document.getElementById('ai-chat-input');
-  if (input) input.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendAIChatMessage();
-  });
-}
-
-// ===== AUTH UI =====
-function setupAuthUI() {
-  const loginBtn = document.getElementById('login-btn');
-  const closeBtn = document.getElementById('auth-close');
-  const exitBtn = document.getElementById('auth-exit');
-  const registerBtn = document.getElementById('auth-register');
-  const authLoginBtn = document.getElementById('auth-login');
-
-  if (loginBtn) loginBtn.addEventListener('click', openAuthModal);
-  if (closeBtn) closeBtn.addEventListener('click', closeAuthModal);
-  if (exitBtn) exitBtn.addEventListener('click', exitAuth);
-  if (registerBtn) registerBtn.addEventListener('click', handleRegister);
-  if (authLoginBtn) authLoginBtn.addEventListener('click', handleLogin);
-}
-
-function openAuthModal() {
-  document.getElementById('auth-modal').style.display = 'block';
-  const msg = document.getElementById('auth-msg'); if (msg) msg.textContent = '';
-}
-
-function closeAuthModal() {
-  document.getElementById('auth-modal').style.display = 'none';
-}
-
-function exitAuth() {
-  // Clear inputs and close modal
-  const nameEl = document.getElementById('auth-name');
-  const emailEl = document.getElementById('auth-email');
-  const passEl = document.getElementById('auth-password');
-  const msg = document.getElementById('auth-msg');
-  if (nameEl) nameEl.value = '';
-  if (emailEl) emailEl.value = '';
-  if (passEl) passEl.value = '';
-  if (msg) msg.textContent = 'Exited.';
-  setTimeout(() => { closeAuthModal(); if (msg) msg.textContent = ''; }, 600);
-}
-
-async function handleRegister() {
-  const email = document.getElementById('auth-email').value.trim();
-  const password = document.getElementById('auth-password').value.trim();
-  const name = document.getElementById('auth-name').value.trim();
-  const msg = document.getElementById('auth-msg');
-  if (!email || !password) { if (msg) msg.textContent = 'Email and password required.'; return; }
-  // basic email validation
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { if (msg) msg.textContent = 'Please enter a valid email address.'; return; }
-
-  try {
-    const resp = await fetch(`${API_BASE}/auth/register`, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({email, password, name})
-    });
-    let data = null;
-    try { data = await resp.json(); } catch (e) { /* non-json response */ }
-    if (resp.ok) {
-      if (msg) msg.textContent = 'Registered successfully. You may now log in.';
-    } else {
-      const err = (data && data.error) ? data.error : `Status ${resp.status}`;
-      if (msg) msg.textContent = `Registration failed: ${err}`;
-      console.error('Register failed', resp.status, data);
-    }
-  } catch (e) {
-    console.error('Register error', e); if (msg) msg.textContent = 'Registration error.';
-  }
-}
-
-async function handleLogin() {
-  const email = document.getElementById('auth-email').value.trim();
-  const password = document.getElementById('auth-password').value.trim();
-  const msg = document.getElementById('auth-msg');
-  if (!email || !password) { if (msg) msg.textContent = 'Email and password required.'; return; }
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { if (msg) msg.textContent = 'Please enter a valid email address.'; return; }
-
-  try {
-    const resp = await fetch(`${API_BASE}/auth/login`, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({email, password})
-    });
-    let data = null;
-    try { data = await resp.json(); } catch (e) { /* non-json */ }
-    if (resp.ok && data && data.success) {
-      if (msg) msg.textContent = 'Login successful!';
-      // update UI - show logged in user
-      const loginBtn = document.getElementById('login-btn');
-      if (loginBtn) loginBtn.textContent = `👤 ${data.user.email}`;
-      closeAuthModal();
-    } else {
-      const err = (data && data.error) ? data.error : `Status ${resp.status}`;
-      if (msg) msg.textContent = `Login failed: ${err}`;
-      console.error('Login failed', resp.status, data);
-    }
-  } catch (e) {
-    console.error('Login error', e); if (msg) msg.textContent = 'Login error.';
-  }
-}
-
-function openAIChat() {
-  document.getElementById('ai-chat-modal').style.display = 'block';
-  // initial message
-  addAIMessage('Hi! I am your AI Negotiation Assistant. Ask me about negotiating prices or type an offer (e.g., "$60 for headphones").', 'bot');
-}
-
-function closeAIChat() {
-  document.getElementById('ai-chat-modal').style.display = 'none';
-  document.getElementById('ai-chat-messages').innerHTML = '';
-  const input = document.getElementById('ai-chat-input'); if (input) input.value = '';
-}
-
-async function exitAIChat() {
-  // Inform backend session ended (best-effort) then close UI
-  try {
-    await fetch(`${API_BASE}/chatbot/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_message: '__session_end__' })
-    });
-  } catch (e) {
-    // Ignore errors - exit is best-effort
-    console.warn('Exit notification failed', e);
-  }
-
-  addAIMessage('Session ended. Thanks for chatting — closing now.', 'bot');
-  setTimeout(() => {
-    closeAIChat();
-  }, 700);
-}
-
-function addAIMessage(text, who = 'user') {
-  const container = document.getElementById('ai-chat-messages');
-  if (!container) return;
-  const msg = document.createElement('div');
-  msg.style.marginBottom = '0.6rem';
-  if (who === 'user') {
-    msg.style.textAlign = 'right';
-    msg.innerHTML = `<div style="display:inline-block;background:#0ea5e9;color:#fff;padding:0.5rem 0.75rem;border-radius:8px;">${escapeHtml(text)}</div>`;
-  } else {
-    msg.style.textAlign = 'left';
-    msg.innerHTML = `<div style="display:inline-block;background:#f3f4f6;color:#111;padding:0.5rem 0.75rem;border-radius:8px;">${escapeHtml(text)}</div>`;
-  }
-  container.appendChild(msg);
-  container.scrollTop = container.scrollHeight;
-}
-
-function escapeHtml(unsafe) {
-  return String(unsafe)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-async function sendAIChatMessage() {
-  const input = document.getElementById('ai-chat-input');
-  if (!input) return;
-  const text = input.value.trim();
-  if (!text) return;
-  addAIMessage(text, 'user');
-  input.value = '';
-
-  try {
-    const resp = await fetch(`${API_BASE}/chatbot/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_message: text })
-    });
-    if (!resp.ok) throw new Error('Chat endpoint error');
-    const data = await resp.json();
-    if (data.success && data.reply) {
-      addAIMessage(data.reply, 'bot');
-    } else if (data.success && data.message) {
-      addAIMessage(data.message, 'bot');
-    } else {
-      addAIMessage('Sorry, I could not process that right now.', 'bot');
-    }
-  } catch (err) {
-    console.error('AI chat error', err);
-    addAIMessage('Connection issue. Please try again later.', 'bot');
-  }
-}
-
-// ===== FETCH PRODUCTS =====
-async function fetchProducts() {
-  const statusEl = document.getElementById('status');
-  
-  try {
-    const resp = await fetch(`${API_BASE}/products/`);
-    if (!resp.ok) throw new Error('Failed to load products');
-    
-    const payload = await resp.json();
-    if (!payload.success) throw new Error(payload.error || 'API error');
-    
-    products = payload.data.map(p => ({
-      ...p,
-      negotiation_available: true,
-      original_price: Number(p.price) * (1 + Math.random() * 0.3),
-      discount_percent: Math.floor(Math.random() * 30)
-    }));
-
-    // Calculate statistics
-    const avgPrice = (products.reduce((sum, p) => sum + parseFloat(p.price), 0) / products.length).toFixed(2);
-    const minPrice = Math.min(...products.map(p => parseFloat(p.price))).toFixed(2);
-    const maxPrice = Math.max(...products.map(p => parseFloat(p.price))).toFixed(2);
-    const categories = [...new Set(products.map(p => p.category))].length;
-    
-    statusEl.innerHTML = `✅ Loaded ${products.length} products | Categories: ${categories} | Price Range: $${minPrice} - $${maxPrice} | Avg: $${avgPrice}`;
-    statusEl.style.display = 'block';
-    
-    displayProducts(products);
-    // mirror full list inside home section aside
-    displayProducts(products, 'home-dataset-grid');
-    loadDeals();
-    // Populate home preview with a few products
-    populateHomePreview(products.slice(0, 6));
-  } catch (err) {
-    statusEl.innerHTML = '❌ Error: ' + err.message + ' (Make sure backend is running on ' + API_BASE + ')';
-    statusEl.style.display = 'block';
-    console.error(err);
-    
-    // Fallback to CSV dataset, then static sample data as last resort.
-    const loadedFromCsv = await loadProductsFromCsv();
-    if (!loadedFromCsv) {
-      loadSampleData();
-    }
-  }
-}
-
-// Populate the home hero preview with sample product cards
-function populateHomePreview(items) {
-  const container = document.getElementById('home-product-preview');
-  if (!container) return;
-  container.innerHTML = '';
-
-  items.forEach(prod => {
-    const card = document.createElement('div');
-    card.style.minWidth = '220px';
-    card.style.background = '#fff';
-    card.style.padding = '0.75rem';
-    card.style.borderRadius = '8px';
-    card.style.boxShadow = '0 6px 18px rgba(2,6,23,0.06)';
-    card.style.display = 'flex';
-    card.style.flexDirection = 'column';
-    card.style.gap = '0.5rem';
-
-    const title = document.createElement('div');
-    title.style.fontWeight = '700';
-    title.textContent = prod.name;
-
-    const price = document.createElement('div');
-    price.style.color = '#0f172a';
-    price.style.fontWeight = '600';
-    price.textContent = `$${Number(prod.price).toFixed(2)}`;
-
-    const actions = document.createElement('div');
-    actions.style.display = 'flex';
-    actions.style.gap = '0.5rem';
-
-    const detailBtn = document.createElement('button');
-    detailBtn.className = 'btn btn-small';
-    detailBtn.textContent = 'Details';
-    detailBtn.onclick = () => openProductDetail(prod.product_id);
-
-    const negBtn = document.createElement('button');
-    negBtn.className = 'btn btn-small';
-    negBtn.textContent = 'Negotiate';
-    negBtn.onclick = () => openNegotiationChat(prod.product_id);
-
-    actions.appendChild(detailBtn);
-    actions.appendChild(negBtn);
-
-    card.appendChild(title);
-    card.appendChild(price);
-    card.appendChild(actions);
-
-    container.appendChild(card);
-  });
-}
-
-// ===== SAMPLE DATA FALLBACK =====
-function loadSampleData() {
-  products = [
-    { product_id: '1', id: 1, name: 'Wireless Headphones', price: 79.99, category: 'Electronics', description: 'Premium wireless headphones', negotiation_available: true, original_price: 99.99, discount_percent: 20 },
-    { product_id: '2', id: 2, name: 'USB-C Cable', price: 12.99, category: 'Electronics', description: 'Durable USB-C charging cable', negotiation_available: true, original_price: 16.99, discount_percent: 23 },
-    { product_id: '3', id: 3, name: 'Cotton T-Shirt', price: 24.99, category: 'Clothing', description: 'Comfortable cotton t-shirt', negotiation_available: true, original_price: 34.99, discount_percent: 28 },
-    { product_id: '4', id: 4, name: 'Coffee Maker', price: 45.99, category: 'Home', description: 'Automatic drip coffee maker', negotiation_available: true, original_price: 59.99, discount_percent: 23 },
-    { product_id: '5', id: 5, name: 'Running Shoes', price: 89.99, category: 'Sports', description: 'Lightweight running shoes', negotiation_available: true, original_price: 119.99, discount_percent: 25 },
-    { product_id: '6', id: 6, name: 'Programming Book', price: 34.99, category: 'Books', description: 'Learn web development guide', negotiation_available: true, original_price: 49.99, discount_percent: 30 }
-  ];
-  
-  document.getElementById('status').textContent = '⚠️ Using sample data (Backend not connected)';
-  displayProducts(products);
-  displayProducts(products, 'home-dataset-grid');
-  populateHomePreview(products.slice(0, 6));
-  loadDeals();
-}
-
-async function loadProductsFromCsv() {
-  const statusEl = document.getElementById('status');
-  const csvPaths = ['../negotation.csv', './negotation.csv', '/negotation.csv'];
-
-  for (const path of csvPaths) {
-    try {
-      const response = await fetch(path);
-      if (!response.ok) {
-        continue;
-      }
-
-      const csvText = await response.text();
-      const rows = parseCsvRows(csvText);
-      if (rows.length === 0) {
-        continue;
-      }
-
-      products = rows.map(row => {
-        const price = Number(row['Price']);
-        const discountPercent = Number(row['Discount (%)']) || 0;
-        const negotiatedPrice = Number(row['Negotiated Price']);
-        const originalPrice = discountPercent > 0
-          ? price / (1 - (discountPercent / 100))
-          : price;
-
-        return {
-          id: Number(row['Product ID']),
-          product_id: String(row['Product ID']),
-          name: row['Product Name'] || 'Product',
-          description: row['Description'] || 'Premium quality product',
-          price: Number.isFinite(price) ? price : 0,
-          category: row['Category'] || 'General',
-          size: row['Size'] || '',
-          color: row['Color'] || '',
-          material: row['Material'] || '',
-          negotiation_available: String(row['Negotiable']).toUpperCase() === 'TRUE',
-          discount_percent: Number.isFinite(discountPercent) ? discountPercent : 0,
-          negotiated_price: Number.isFinite(negotiatedPrice) ? negotiatedPrice : null,
-          original_price: Number.isFinite(originalPrice) ? originalPrice : (Number.isFinite(price) ? price : 0)
-        };
-      });
-
-      if (products.length === 0) {
-        continue;
-      }
-
-      const minPrice = Math.min(...products.map(p => Number(p.price))).toFixed(2);
-      const maxPrice = Math.max(...products.map(p => Number(p.price))).toFixed(2);
-      const categories = [...new Set(products.map(p => p.category))].length;
-
-      if (statusEl) {
-        statusEl.innerHTML = `✅ Loaded ${products.length} products from CSV dataset | Categories: ${categories} | Price Range: $${minPrice} - $${maxPrice}`;
-        statusEl.style.display = 'block';
-      }
-
-      displayProducts(products);
-      displayProducts(products, 'home-dataset-grid');
-      populateHomePreview(products.slice(0, 6));
-      loadDeals();
-      return true;
-    } catch (error) {
-      console.warn(`CSV load failed from ${path}`, error);
-    }
-  }
-
-  return false;
-}
-
-function parseCsvRows(csvText) {
-  if (!csvText) return [];
-
-  const lines = csvText
-    .split(/\r?\n/)
-    .map(line => line.trim())
-    .filter(line => line.length > 0);
-
-  if (lines.length < 2) return [];
-
-  const headers = parseCsvLine(lines[0]);
-  const rows = [];
-
-  for (let i = 1; i < lines.length; i += 1) {
-    const values = parseCsvLine(lines[i]);
-    if (values.length === 0) continue;
-
-    const row = {};
-    headers.forEach((header, index) => {
-      row[header] = values[index] ?? '';
-    });
-    rows.push(row);
-  }
-
-  return rows;
-}
+const SAMPLE_PRODUCTS = [
+  { product_id: '1', id: 1, name: 'Wireless Headphones', price: 79.99, category: 'Electronics', description: 'Premium wireless headphones', negotiation_available: true },
+  { product_id: '2', id: 2, name: 'USB-C Cable', price: 12.99, category: 'Electronics', description: 'Durable USB-C charging cable', negotiation_available: true },
+  { product_id: '3', id: 3, name: 'Cotton T-Shirt', price: 24.99, category: 'Clothing', description: 'Comfortable cotton t-shirt', negotiation_available: true },
+  { product_id: '4', id: 4, name: 'Coffee Maker', price: 45.99, category: 'Home', description: 'Automatic drip coffee maker', negotiation_available: true },
+  { product_id: '5', id: 5, name: 'Running Shoes', price: 89.99, category: 'Sports', description: 'Lightweight running shoes', negotiation_available: true },
+  { product_id: '6', id: 6, name: 'Programming Book', price: 34.99, category: 'Books', description: 'Learn web development guide', negotiation_available: true }
+];
 
 function parseCsvLine(line) {
   const values = [];
@@ -497,744 +50,759 @@ function parseCsvLine(line) {
   return values;
 }
 
-// ===== DISPLAY PRODUCTS =====
-function displayProducts(productsToShow, containerId = 'product-grid') {
-  const grid = document.getElementById(containerId);
-  if (!grid) return; // nothing to display if container missing
-  grid.innerHTML = '';
+function parseCsvRows(csvText) {
+  if (!csvText) return [];
+  const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  if (lines.length < 2) return [];
 
-  if (productsToShow.length === 0) {
-    grid.innerHTML = '<p class="status">No products found</p>';
-    return;
-  }
-
-  const sorted = sortProducts([...productsToShow]);
-  
-  sorted.forEach(product => {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    
-    // Calculate discount and original price
-    const originalPrice = product.original_price || product.price * 1.15;
-    const discountPercent = product.discount_percent || Math.floor((originalPrice - product.price) / originalPrice * 100);
-    const discountLabel = discountPercent > 0 
-      ? `<span class="discount-label">-${discountPercent}%</span>` 
-      : '';
-    
-    // Truncate description to 2 lines
-    const shortDesc = product.description 
-      ? product.description.substring(0, 80) + (product.description.length > 80 ? '...' : '')
-      : 'Premium quality product';
-    
-    card.innerHTML = `
-      <div class="product-image">
-        <div class="product-image-placeholder" style="width:100%;height:160px;background:#f0f0f0;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;font-size:0.9rem;margin-bottom:0.5rem;">📦 Image</div>
-      </div>
-      <div class="product-content">
-        <span class="product-category">${product.category || 'General'}</span>
-        <h3 class="product-title" title="${product.name}">${product.name}</h3>
-        <p class="product-description" style="font-size:0.85rem;color:#666;margin:0.3rem 0;line-height:1.3;">${shortDesc}</p>
-        <div class="product-rating">
-          <span class="stars">★★★★★</span>
-          <span style="font-size:0.85rem;">(${Math.floor(Math.random() * 500 + 50)} reviews)</span>
-        </div>
-        <div class="product-price-info">
-          <span class="original-price" style="font-size:0.9rem;">$${parseFloat(originalPrice).toFixed(2)}</span>
-          <span class="current-price" style="font-weight:bold;">$${Number(product.price).toFixed(2)}</span>
-          ${discountLabel}
-        </div>
-        <div class="product-actions" style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
-          <button class="add-to-cart-btn" onclick="quickAddToCart('${product.product_id}')" style="padding:0.5rem;font-size:0.85rem;">🛒 Cart</button>
-          <button class="negotiate-btn" onclick="openNegotiationChat('${product.product_id}')" style="padding:0.5rem;font-size:0.85rem;cursor:pointer;background:#ec4899;color:white;border:none;border-radius:6px;">🤝 Negotiate</button>
-          <button class="detail-btn" onclick="openProductDetail('${product.product_id}')" style="padding:0.5rem;font-size:0.85rem;cursor:pointer;grid-column:1/-1;">💬 Details</button>
-        </div>
-      </div>
-    `;
-    
-    card.addEventListener('click', (e) => {
-      if (e.target.closest('button')) return;
-      openProductDetail(product.product_id);
+  const headers = parseCsvLine(lines[0]);
+  return lines.slice(1).map(line => {
+    const row = {};
+    const values = parseCsvLine(line);
+    headers.forEach((header, index) => {
+      row[header] = values[index] ?? '';
     });
-    
-    grid.appendChild(card);
+    return row;
   });
 }
 
-function sortProducts(prods) {
-  const sortValue = document.getElementById('sort-select').value;
-  
-  switch(sortValue) {
-    case 'price-low':
-      return prods.sort((a, b) => Number(a.price) - Number(b.price));
-    case 'price-high':
-      return prods.sort((a, b) => Number(b.price) - Number(a.price));
-    case 'popular':
-      return prods.sort(() => Math.random() - 0.5);
-    case 'discount':
-      return prods.sort((a, b) => b.discount_percent - a.discount_percent);
-    default:
-      return prods;
-  }
-}
-
-// ===== PRODUCT DETAIL MODAL =====
-function openProductDetail(productId) {
-  const product = products.find(p => p.product_id === productId);
-  if (!product) return;
-  
-  currentProduct = product;
-  
-  // Calculate discount
-  const originalPrice = product.original_price || product.price * 1.15;
-  const discountPercent = product.discount_percent || Math.floor((originalPrice - product.price) / originalPrice * 100);
-  
-  // Populate product details
-  document.getElementById('detail-product-id').textContent = `ID: ${product.product_id}`;
-  document.getElementById('detail-name').textContent = product.name;
-  document.getElementById('detail-category').textContent = product.category || 'General';
-  document.getElementById('detail-price').textContent = Number(product.price).toFixed(2);
-  document.getElementById('detail-original-price').textContent = originalPrice.toFixed(2);
-  
-  // Stock status
-  const stock = product.stock || 100;
-  const stockStatus = stock > 50 ? '✓ In Stock' : stock > 0 ? '⚠ Low Stock' : '✗ Out of Stock';
-  document.getElementById('detail-stock').textContent = stockStatus;
-  document.getElementById('detail-units').textContent = `${stock} units available`;
-  
-  // Date (format nicely)
-  const dateAdded = product.created_at 
-    ? new Date(product.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-    : 'Recently Added';
-  document.getElementById('detail-date').textContent = dateAdded;
-  
-  // Full description
-  document.getElementById('detail-description').textContent = product.description || 'Premium quality product from our collection.';
-  document.getElementById('detail-about').textContent = product.description || 'This is a high-quality product available in our NegotiateHub store.';
-  
-  // Discount badge
-  const discountBadge = document.getElementById('discount-badge');
-  if (discountPercent > 0) {
-    discountBadge.textContent = `Save ${discountPercent}%`;
-    discountBadge.style.display = 'inline-block';
-  } else {
-    discountBadge.style.display = 'none';
-  }
-  
-  // Reset quantity
-  document.getElementById('qty-input').value = '1';
-  
-  // Open modal
-  document.getElementById('product-detail-modal').style.display = 'block';
-  
-  // Setup negotiate button
-  const negotiateBtn = document.getElementById('negotiate-btn');
-  if (negotiateBtn) {
-    negotiateBtn.onclick = () => openNegotiationChat(productId);
-  }
-}
-
-function closeProductDetail() {
-  document.getElementById('product-detail-modal').style.display = 'none';
-  currentProduct = null;
-}
-
-// ===== FILTERS =====
-function applyFilters() {
-  const selectedCategories = Array.from(document.querySelectorAll('.category-filter:checked'))
-    .map(el => el.value);
-  const maxPrice = Number(document.getElementById('price-range').value);
-  
-  let filtered = products.filter(p => {
-    const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(p.category);
-    const priceMatch = Number(p.price) <= maxPrice;
-    return categoryMatch && priceMatch;
-  });
-  
-  displayProducts(filtered);
-}
-
-function resetFilters() {
-  document.querySelectorAll('.category-filter, .negotiation-filter').forEach(el => el.checked = false);
-  document.getElementById('price-range').value = 5000;
-  document.getElementById('price-value').textContent = '$5000';
-  displayProducts(products);
-}
-
-// ===== PRODUCT DETAIL =====
-function openProductDetail(productId) {
-  currentProduct = products.find(p => p.product_id === productId);
-  if (!currentProduct) return;
-  
-  document.getElementById('detail-name').textContent = currentProduct.name;
-  document.getElementById('detail-original-price').textContent = currentProduct.original_price.toFixed(2);
-  document.getElementById('detail-price').textContent = currentProduct.price;
-  
-  // Use actual product description from dataset, or fallback
-  const description = currentProduct.description 
-    ? currentProduct.description.substring(0, 200) + (currentProduct.description.length > 200 ? '...' : '')
-    : `High-quality ${currentProduct.category || 'product'} with excellent features and reliability.`;
-  
-  document.getElementById('detail-description').textContent = description;
-  
-  const discountBadge = document.getElementById('discount-badge');
-  if (currentProduct.discount_percent > 0) {
-    discountBadge.textContent = `Save ${currentProduct.discount_percent}%`;
-  } else {
-    discountBadge.textContent = '';
-  }
-  
-  const specs = [
-    `Brand: Premium Quality`,
-    `Category: ${currentProduct.category || 'General'}`,
-    `Price: $${currentProduct.price.toFixed(2)}`,
-    `Stock Status: Available (100+ units)`,
-    `Shipping: Free Worldwide`,
-    `Warranty: 1 Year`,
-    `Return Policy: 30 Days Money Back Guarantee`
-  ];
-  
-  const specsList = document.getElementById('detail-specs');
-  specsList.innerHTML = specs.map(s => `<li>${s}</li>`).join('');
-  
-  document.getElementById('qty-input').value = 1;
-  document.getElementById('product-detail-modal').classList.add('open');
-  
-  // Setup negotiate button
-  document.getElementById('negotiate-btn').onclick = () => openNegotiationChat(productId);
-}
-
-function closeProductDetail() {
-  document.getElementById('product-detail-modal').classList.remove('open');
-  currentProduct = null;
-}
-
-function increaseQty() {
-  const input = document.getElementById('qty-input');
-  input.value = parseInt(input.value) + 1;
-}
-
-function decreaseQty() {
-  const input = document.getElementById('qty-input');
-  if (parseInt(input.value) > 1) {
-    input.value = parseInt(input.value) - 1;
-  }
-}
-
-function addToCart() {
-  if (!currentProduct) return;
-  
-  const qty = parseInt(document.getElementById('qty-input').value);
-  addToCartLogic(currentProduct, qty);
-  
-  alert(`✓ Added ${qty}x ${currentProduct.name} to cart!`);
-  closeProductDetail();
-}
-
-function quickAddToCart(productId) {
-  const product = products.find(p => p.product_id === productId);
-  if (product) {
-    addToCartLogic(product, 1);
-    updateCartCount();
-  }
-}
-
-function addToCartLogic(product, qty) {
-  const existingItem = cart.find(item => item.product_id === product.product_id);
-  
-  if (existingItem) {
-    existingItem.quantity += qty;
-  } else {
-    cart.push({
-      ...product,
-      quantity: qty,
-      negotiated_price: null
-    });
-  }
-  
-  saveCartToStorage();
-  updateCartCount();
-}
-
-function updateCartCount() {
-  const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-  document.getElementById('cart-count').textContent = count;
-}
-
-function saveCartToStorage() {
-  localStorage.setItem('cart', JSON.stringify(cart));
-}
-
-function loadCartFromStorage() {
-  const saved = localStorage.getItem('cart');
-  if (saved) {
-    cart = JSON.parse(saved);
-    updateCartCount();
-  }
-}
-
-// ===== CART MANAGEMENT =====
-function openCart() {
-  const cartItems = document.getElementById('cart-items');
-  
-  if (cart.length === 0) {
-    cartItems.innerHTML = '<p class="empty-cart">Your cart is empty</p>';
-  } else {
-    cartItems.innerHTML = cart.map((item, idx) => `
-      <div class="cart-item">
-        <div class="cart-item-image">Image</div>
-        <div class="cart-item-details">
-          <h4 class="cart-item-title">${item.name}</h4>
-          <div class="cart-item-meta">
-            <span>${item.category || 'Product'}</span>
-            <span class="cart-item-price">$${Number(item.price).toFixed(2)}</span>
-          </div>
-          <div class="cart-item-qty">
-            <button class="qty-btn" onclick="updateCartQty(${idx}, -1)">−</button>
-            <span>${item.quantity}</span>
-            <button class="qty-btn" onclick="updateCartQty(${idx}, 1)">+</button>
-            <button class="cart-item-remove" onclick="removeFromCart(${idx})">Remove</button>
-          </div>
-        </div>
-        <div style="text-align: right;">
-          <div style="font-weight: 600; margin-bottom: 0.5rem;">
-            $${(Number(item.price) * item.quantity).toFixed(2)}
-          </div>
-          <button class="btn btn-accent" onclick="openNegotiationChat('${item.product_id}')" style="padding: 0.5rem; font-size: 0.8rem;">
-            Negotiate
-          </button>
-        </div>
-      </div>
-    `).join('');
-  }
-  
-  updateCartSummary();
-  document.getElementById('cart-modal').classList.add('open');
-}
-
-function updateCartQty(idx, change) {
-  cart[idx].quantity += change;
-  if (cart[idx].quantity <= 0) {
-    removeFromCart(idx);
-  } else {
-    saveCartToStorage();
-    updateCartCount();
-    openCart();
-  }
-}
-
-function removeFromCart(idx) {
-  cart.splice(idx, 1);
-  saveCartToStorage();
-  updateCartCount();
-  openCart();
-}
-
-function updateCartSummary() {
-  const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
-  const discount = cart.reduce((sum, item) => {
-    if (item.negotiated_price) {
-      return sum + ((Number(item.price) - item.negotiated_price) * item.quantity);
-    }
-    return sum + (item.discount_percent / 100 * Number(item.price) * item.quantity);
-  }, 0);
-  const total = subtotal - discount;
-  
-  document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
-  document.getElementById('discount-amount').textContent = '-$' + discount.toFixed(2);
-  document.getElementById('total').textContent = '$' + total.toFixed(2);
-}
-
-function closeCart() {
-  document.getElementById('cart-modal').classList.remove('open');
-}
-
-function checkout() {
-  if (cart.length === 0) {
-    alert('Your cart is empty!');
-    return;
-  }
-  alert('✓ Order placed successfully! Thank you for shopping with NegotiateHub.');
-  cart = [];
-  saveCartToStorage();
-  updateCartCount();
-  closeCart();
-}
-
-// ===== NEGOTIATION CHAT =====
-function openNegotiationChat(productId) {
-  const product = products.find(p => p.product_id === productId);
-  if (!product) return;
-  
-  currentNegotiation = {
-    product,
-    basePrice: Number(product.price),
-    minPrice: Number(product.price) * 0.7,
-    maxPrice: Number(product.price) * 1.2,
-    currentOffer: null,
-    messages: [],
-    negotiationDepth: 0
+function decorateProduct(p) {
+  const fallbackId = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+  const price = Number(p.price || 0);
+  const discount = Number.isFinite(Number(p.discount_percent)) ? Number(p.discount_percent) : Math.floor(Math.random() * 30);
+  const original = Number.isFinite(Number(p.original_price)) ? Number(p.original_price) : (price > 0 ? price / (1 - discount / 100) : 0);
+  return {
+    ...p,
+    product_id: String(p.product_id ?? p.id ?? fallbackId),
+    price,
+    category: p.category || 'General',
+    description: p.description || 'Premium quality product',
+    negotiation_available: p.negotiation_available !== false,
+    discount_percent: Math.max(0, Math.round(discount)),
+    original_price: Number.isFinite(original) ? original : price
   };
-  
-  document.getElementById('chat-product-name').textContent = product.name;
-  document.getElementById('chat-base-price').textContent = currentNegotiation.basePrice.toFixed(2);
-  document.getElementById('chat-min-price').textContent = currentNegotiation.minPrice.toFixed(2);
-  document.getElementById('chat-messages').innerHTML = '';
-  document.getElementById('chat-text').value = '';
-  document.getElementById('offer-price').value = '';
-  
-  // Get initial message from chatbot API
-  getInitialChatMessage(productId);
-  
-  document.getElementById('chat-modal').classList.add('open');
-  closeCart();
-  closeProductDetail();
 }
 
-async function getInitialChatMessage(productId) {
-  try {
-    const response = await fetch(`${API_BASE}/chatbot/initial`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ product_id: productId })
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.success) {
-        console.log('✓ Got initial chatbot greeting:', data);
-        addChatMessage(data.greeting, 'bot');
-        // Add tips as hint messages for nice yellow styling
-        if (data.tips && data.tips.length > 0) {
-          data.tips.forEach(tip => {
-            addChatMessage(tip, 'hint');
-          });
+function money(v) {
+  return `$${Number(v || 0).toFixed(2)}`;
+}
+
+function ProductCard({ product, onDetail, onAdd, onNegotiate }) {
+  return (
+    <div className="product-card">
+      <div className="product-image">
+        <div className="product-image-placeholder" style={{ width: '100%', height: '160px', background: '#f0f0f0', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999', marginBottom: '0.5rem' }}>
+          Image
+        </div>
+      </div>
+      <div className="product-content">
+        <span className="product-category">{product.category}</span>
+        <h3 className="product-title">{product.name}</h3>
+        <p className="product-description">{product.description.slice(0, 90)}{product.description.length > 90 ? '...' : ''}</p>
+        <div className="price-section">
+          <span className="original-price">{money(product.original_price)}</span>
+          <span className="current-price">{money(product.price)}</span>
+          {product.discount_percent > 0 && <span className="discount-label">-{product.discount_percent}%</span>}
+        </div>
+        <div className="product-actions" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button className="btn btn-secondary btn-small" onClick={() => onDetail(product)}>Details</button>
+          <button className="btn btn-primary btn-small" onClick={() => onAdd(product, 1)}>Add to Cart</button>
+          <button className="btn btn-accent btn-small" onClick={() => onNegotiate(product)}>Negotiate</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [section, setSection] = useState('home');
+  const [products, setProducts] = useState([]);
+  const [status, setStatus] = useState('Loading products...');
+  const [selectedCats, setSelectedCats] = useState([]);
+  const [onlyNegotiable, setOnlyNegotiable] = useState(false);
+  const [priceCap, setPriceCap] = useState(5000);
+  const [sortBy, setSortBy] = useState('newest');
+
+  const [cart, setCart] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('cart') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  const [cartOpen, setCartOpen] = useState(false);
+  const [detailProduct, setDetailProduct] = useState(null);
+  const [detailQty, setDetailQty] = useState(1);
+
+  const [negotiationOpen, setNegotiationOpen] = useState(false);
+  const [negotiation, setNegotiation] = useState(null);
+  const [offerInput, setOfferInput] = useState('');
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authName, setAuthName] = useState('');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authMessage, setAuthMessage] = useState('');
+  const [loggedInUser, setLoggedInUser] = useState('');
+  const [aiChatOpen, setAiChatOpen] = useState(false);
+  const [aiChatInput, setAiChatInput] = useState('');
+  const [aiChatMessages, setAiChatMessages] = useState([]);
+
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function load() {
+      try {
+        const resp = await fetch(`${API_BASE}/products/`);
+        if (!resp.ok) throw new Error('Backend not reachable');
+        const payload = await resp.json();
+        if (!payload.success) throw new Error(payload.error || 'API error');
+
+        const data = payload.data.map(decorateProduct);
+        if (!mounted) return;
+
+        setProducts(data);
+        setStatus(`Loaded ${data.length} products from backend`);
+      } catch (err) {
+        const csvData = await loadProductsFromCsv();
+        if (!mounted) return;
+
+        if (csvData.length > 0) {
+          setProducts(csvData);
+          setStatus(`Loaded ${csvData.length} products from CSV`);
+        } else {
+          const fallback = SAMPLE_PRODUCTS.map(decorateProduct);
+          setProducts(fallback);
+          setStatus('Using sample products (backend/csv unavailable)');
         }
       }
-    } else {
-      console.warn('⚠️ Initial greeting request failed:', response.status);
-      showFallbackGreeting();
     }
-  } catch (err) {
-    console.error('❌ Error getting initial greeting:', err);
-    showFallbackGreeting();
-  }
-}
 
-function showFallbackGreeting() {
-  addChatMessage(
-    `🎯 Welcome! I'm your AI negotiator. The current price for this ${currentNegotiation.product.category} is $${currentNegotiation.basePrice.toFixed(2)}. Feel free to make an offer - let's find a deal that works for both of us!`,
-    'bot'
-  );
-  // Show some helpful tips
-  addChatMessage('💡 Pro tip: The lower you go, the higher my counter-offer will be.', 'hint');
-  addChatMessage('💡 Pro tip: Making realistic offers leads to better negotiation outcomes.', 'hint');
-}
+    load();
+    return () => { mounted = false; };
+  }, []);
 
-function closeChat() {
-  document.getElementById('chat-modal').classList.remove('open');
-  currentNegotiation = null;
-}
+  async function loadProductsFromCsv() {
+    const csvPaths = ['../negotation.csv', './negotation.csv', '/negotation.csv'];
+    for (const path of csvPaths) {
+      try {
+        const res = await fetch(path);
+        if (!res.ok) continue;
+        const csv = await res.text();
+        const rows = parseCsvRows(csv);
+        if (!rows.length) continue;
 
-function sendChatMessage() {
-  const text = document.getElementById('chat-text').value.trim();
-  if (!text) return;
-  
-  addChatMessage(text, 'user');
-  document.getElementById('chat-text').value = '';
-  
-  // Simulate bot response
-  setTimeout(() => {
-    const responses = [
-      "That's a reasonable question! Let me help you with the details.",
-      "Great question! This product has excellent quality and features.",
-      "Your feedback is valuable. Would you like to make an offer?",
-      "The price reflects the quality and market conditions. What offer do you have in mind?"
-    ];
-    const response = responses[Math.floor(Math.random() * responses.length)];
-    addChatMessage(response, 'bot');
-  }, 500);
-}
-
-function makeOffer() {
-  if (!currentNegotiation) return;
-  
-  const offerPrice = parseFloat(document.getElementById('offer-price').value);
-  if (isNaN(offerPrice) || offerPrice <= 0) {
-    alert('Please enter a valid price');
-    return;
-  }
-  
-  currentNegotiation.currentOffer = offerPrice;
-  
-  addChatMessage(`I'd like to offer $${offerPrice.toFixed(2)}`, 'user');
-  document.getElementById('offer-price').value = '';
-  
-  // Call backend API for counteroffer
-  callChatbotAPI(offerPrice);
-}
-
-async function callChatbotAPI(offeredPrice) {
-  if (!currentNegotiation) return;
-  
-  try {
-    const payload = {
-      user_message: `I would like to offer $${offeredPrice.toFixed(2)}`,
-      product_id: currentNegotiation.product.product_id,
-      offered_price: offeredPrice,
-      negotiation_depth: currentNegotiation.negotiationDepth
-    };
-    
-    console.log('📤 Sending negotiation offer:', payload);
-    
-    const response = await fetch(`${API_BASE}/chatbot/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    
-    if (data.success) {
-      console.log('✓ Negotiation response:', data);
-      
-      // Update negotiation state with AI response
-      currentNegotiation.negotiationDepth = data.negotiation_depth;
-      currentNegotiation.currentOffer = offeredPrice;
-      
-      // Display intelligent bot response
-      addChatMessage(data.message, 'bot');
-      
-      // Display helpful hint
-      if (data.hint) {
-        addChatMessage(data.hint, 'hint');
+        return rows.map(row => decorateProduct({
+          id: Number(row['Product ID']),
+          product_id: String(row['Product ID']),
+          name: row['Product Name'] || 'Product',
+          description: row['Description'] || 'Premium quality product',
+          price: Number(row['Price']) || 0,
+          category: row['Category'] || 'General',
+          discount_percent: Number(row['Discount (%)']) || 0,
+          negotiation_available: String(row['Negotiable']).toUpperCase() === 'TRUE'
+        }));
+      } catch (e) {
+        continue;
       }
-      
-      // Create accept offer button
-      const buttonContainer = document.createElement('div');
-      buttonContainer.style.marginTop = '1rem';
-      buttonContainer.style.display = 'flex';
-      buttonContainer.style.gap = '0.5rem';
-      buttonContainer.style.justifyContent = 'center';
-      
-      const acceptBtn = document.createElement('button');
-      acceptBtn.className = 'btn btn-primary';
-      acceptBtn.style.padding = '0.75rem 1.5rem';
-      acceptBtn.textContent = `✓ Accept $${data.suggested_price.toFixed(2)}`;
-      acceptBtn.onclick = () => acceptOffer(
-        data.suggested_price,
-        data.product_id,
-        data.product_name
-      );
-      
-      const declineBtn = document.createElement('button');
-      declineBtn.className = 'btn btn-secondary';
-      declineBtn.style.padding = '0.75rem 1.5rem';
-      declineBtn.textContent = 'Make Another Offer';
-      declineBtn.onclick = () => {
-        document.getElementById('offer-price').focus();
+    }
+    return [];
+  }
+
+  const categories = useMemo(() => [...new Set(products.map(p => p.category))], [products]);
+
+  const filteredProducts = useMemo(() => {
+    let list = [...products];
+
+    if (selectedCats.length) {
+      list = list.filter(p => selectedCats.includes(p.category));
+    }
+
+    list = list.filter(p => p.price <= priceCap);
+
+    if (onlyNegotiable) {
+      list = list.filter(p => p.negotiation_available);
+    }
+
+    if (sortBy === 'price-low') list.sort((a, b) => a.price - b.price);
+    if (sortBy === 'price-high') list.sort((a, b) => b.price - a.price);
+    if (sortBy === 'discount') list.sort((a, b) => b.discount_percent - a.discount_percent);
+    if (sortBy === 'popular') list.sort((a, b) => b.name.localeCompare(a.name));
+
+    return list;
+  }, [products, selectedCats, priceCap, onlyNegotiable, sortBy]);
+
+  const deals = useMemo(() => products.filter(p => p.discount_percent >= 20).slice(0, 6), [products]);
+  const cartCount = useMemo(() => cart.reduce((sum, x) => sum + x.quantity, 0), [cart]);
+  const subtotal = useMemo(() => cart.reduce((sum, x) => sum + Number(x.price) * x.quantity, 0), [cart]);
+  const discount = useMemo(() => cart.reduce((sum, item) => {
+    const unit = item.negotiated_price ?? Number(item.price) * (item.discount_percent || 0) / 100;
+    if (item.negotiated_price) return sum + (Number(item.price) - item.negotiated_price) * item.quantity;
+    return sum + unit * item.quantity;
+  }, 0), [cart]);
+
+  function toggleCategory(cat) {
+    setSelectedCats(prev => prev.includes(cat) ? prev.filter(x => x !== cat) : [...prev, cat]);
+  }
+
+  function resetFilters() {
+    setSelectedCats([]);
+    setOnlyNegotiable(false);
+    setPriceCap(5000);
+    setSortBy('newest');
+  }
+
+  function addToCart(product, qty) {
+    setCart(prev => {
+      const idx = prev.findIndex(item => item.product_id === product.product_id);
+      if (idx === -1) return [...prev, { ...product, quantity: qty }];
+      const next = [...prev];
+      next[idx] = { ...next[idx], quantity: next[idx].quantity + qty };
+      return next;
+    });
+  }
+
+  function updateCartQty(index, delta) {
+    setCart(prev => {
+      const next = [...prev];
+      next[index] = { ...next[index], quantity: next[index].quantity + delta };
+      return next.filter(x => x.quantity > 0);
+    });
+  }
+
+  function startNegotiation(product) {
+    setNegotiation({
+      product,
+      minPrice: Number(product.price) * 0.7,
+      messages: [
+        { type: 'bot', text: `Welcome! Current price is ${money(product.price)}. Make your offer.` }
+      ]
+    });
+    setOfferInput('');
+    setNegotiationOpen(true);
+  }
+
+  async function makeOffer() {
+    if (!negotiation) return;
+    const offeredPrice = Number(offerInput);
+    if (!Number.isFinite(offeredPrice) || offeredPrice <= 0) {
+      alert('Please enter a valid offer');
+      return;
+    }
+
+    setOfferInput('');
+    setNegotiation(prev => ({ ...prev, messages: [...prev.messages, { type: 'user', text: `I offer ${money(offeredPrice)}` }] }));
+
+    try {
+      const payload = {
+        user_message: `I offer $${offeredPrice.toFixed(2)}`,
+        product_id: negotiation.product.product_id,
+        offered_price: offeredPrice,
+        negotiation_depth: 0
       };
-      
-      buttonContainer.appendChild(acceptBtn);
-      buttonContainer.appendChild(declineBtn);
-      
-      document.getElementById('chat-messages').appendChild(buttonContainer);
-      document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
-      
-      // Show discount info
-      const discountInfo = document.createElement('div');
-      discountInfo.style.padding = '0.75rem';
-      discountInfo.style.background = '#f0fdf4';
-      discountInfo.style.borderRadius = '6px';
-      discountInfo.style.marginTop = '0.5rem';
-      discountInfo.style.fontSize = '0.9rem';
-      discountInfo.style.color = '#15803d';
-      discountInfo.innerHTML = `
-        <strong>💰 Deal Summary:</strong><br>
-        Original: $${data.original_price.toFixed(2)}<br>
-        Your Offer: $${data.user_offered_price.toFixed(2)}<br>
-        My Offer: $${data.suggested_price.toFixed(2)}<br>
-        <span style="font-weight: bold; color: #22c55e;">Your Savings: $${data.discount_amount.toFixed(2)} (${data.discount_percent.toFixed(1)}%)</span>
-      `;
-      document.getElementById('chat-messages').appendChild(discountInfo);
-      document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
-      
-    } else {
-      console.error('❌ API error:', data.error);
-      addChatMessage(`Error: ${data.error}. Let me try a different approach.`, 'bot');
-      simulateBotResponse(offeredPrice);
+
+      const response = await fetch(`${API_BASE}/chatbot/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error('API request failed');
+      const data = await response.json();
+
+      if (data.success) {
+        setNegotiation(prev => ({
+          ...prev,
+          messages: [
+            ...prev.messages,
+            { type: 'bot', text: data.message || `Suggested price: ${money(data.suggested_price)}` },
+            { type: 'hint', text: `Suggested: ${money(data.suggested_price)} | Savings: ${money(data.discount_amount)}` }
+          ],
+          latestSuggestedPrice: Number(data.suggested_price)
+        }));
+        return;
+      }
+
+      throw new Error(data.error || 'Negotiation error');
+    } catch (e) {
+      const base = Number(negotiation.product.price);
+      const min = Number(negotiation.minPrice);
+      const suggested = Math.max(min, (offeredPrice + base) / 2);
+      setNegotiation(prev => ({
+        ...prev,
+        messages: [...prev.messages, { type: 'bot', text: `Counter offer: ${money(suggested)}` }],
+        latestSuggestedPrice: suggested
+      }));
     }
-  } catch (err) {
-    console.error('Chatbot API error:', err);
-    addChatMessage('I encountered a connection issue. Let me work with what I have...', 'bot');
-    simulateBotResponse(offeredPrice);
   }
-}
 
-function simulateBotResponse(offerPrice) {
-  setTimeout(() => {
-    let response;
-    const discount = ((currentNegotiation.basePrice - offerPrice) / currentNegotiation.basePrice) * 100;
-    
-    if (offerPrice >= currentNegotiation.basePrice * 0.95) {
-      response = `That's very close to our asking price! I can accept $${(currentNegotiation.basePrice * 0.95).toFixed(2)}. Would that work for you?`;
-    } else if (offerPrice >= currentNegotiation.minPrice * 1.1) {
-      response = `Good offer! I can meet you at $${(offerPrice + (currentNegotiation.basePrice - offerPrice) * 0.3).toFixed(2)}. That's a ${discount.toFixed(1)}% discount!`;
-    } else if (offerPrice >= currentNegotiation.minPrice) {
-      response = `That's getting interesting! The lowest I can go is $${currentNegotiation.minPrice.toFixed(2)}. Shall we settle at that?`;
-    } else {
-      response = `I appreciate the offer, but the absolute minimum is $${currentNegotiation.minPrice.toFixed(2)}. That's already 30% off!`;
+  function acceptNegotiatedPrice() {
+    if (!negotiation || !negotiation.latestSuggestedPrice) return;
+    addToCart({ ...negotiation.product, negotiated_price: negotiation.latestSuggestedPrice }, 1);
+    setNegotiationOpen(false);
+  }
+
+  function resetAuthFields(message = '') {
+    setAuthName('');
+    setAuthEmail('');
+    setAuthPassword('');
+    setAuthMessage(message);
+  }
+
+  function openAuthModal() {
+    setAuthMessage('');
+    setAuthOpen(true);
+  }
+
+  function closeAuthModal() {
+    setAuthOpen(false);
+  }
+
+  function exitAuthModal() {
+    resetAuthFields('Exited.');
+    setTimeout(() => {
+      setAuthOpen(false);
+      setAuthMessage('');
+    }, 500);
+  }
+
+  async function registerUser() {
+    const email = authEmail.trim();
+    const password = authPassword.trim();
+    const name = authName.trim();
+    if (!email || !password) {
+      setAuthMessage('Email and password required.');
+      return;
     }
-    
-    addChatMessage(response, 'bot');
-  }, 600);
-}
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      setAuthMessage('Please enter a valid email address.');
+      return;
+    }
 
-function acceptOffer(acceptedPrice, productId, productName) {
-  if (!currentNegotiation) return;
-  
-  // Use provided productId or fall back to current negotiation
-  const finalProductId = productId || currentNegotiation.product.product_id;
-  const product = currentNegotiation.product;
-  
-  // Check if product already in cart
-  let cartItem = cart.find(item => item.product_id === finalProductId);
-  
-  if (cartItem) {
-    // Update existing cart item
-    cartItem.quantity += 1;
-    cartItem.negotiated_price = acceptedPrice;
-  } else {
-    // Add new item to cart
-    cartItem = {
-      product_id: finalProductId,
-      name: product.name,
-      price: product.price,
-      negotiated_price: acceptedPrice,
-      quantity: 1,
-      category: product.category || 'General'
-    };
-    cart.push(cartItem);
+    try {
+      const resp = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name })
+      });
+      const data = await resp.json().catch(() => null);
+      if (resp.ok) {
+        setAuthMessage('Registered successfully. You may now log in.');
+        return;
+      }
+      setAuthMessage(`Registration failed: ${(data && data.error) || `Status ${resp.status}`}`);
+    } catch (e) {
+      setAuthMessage('Registration error.');
+    }
   }
-  
-  const savings = (product.price - acceptedPrice).toFixed(2);
-  addChatMessage(`✨ Excellent! Deal closed at $${acceptedPrice.toFixed(2)}! (You saved $${savings}) Added to your cart!`, 'bot');
-  
-  updateCartCount();
-  saveCartToStorage();
-  
-  setTimeout(() => {
-    closeChat();
-  }, 2000);
-}
 
-function addChatMessage(message, type = 'user') {
-  const messageDiv = document.createElement('div');
-  messageDiv.style.display = 'grid';
-  messageDiv.style.gridTemplateColumns = 'auto 1fr';
-  messageDiv.style.gap = '0.75rem';
-  messageDiv.style.marginBottom = '1rem';
-  messageDiv.style.alignItems = type === 'user' ? 'flex-end' : 'flex-start';
-  
-  if (type === 'user') {
-    messageDiv.style.justifyContent = 'flex-end';
-  }
-  
-  // Status emoji
-  const statusDiv = document.createElement('div');
-  statusDiv.style.fontSize = '1.5rem';
-  statusDiv.style.flexShrink = '0';
-  
-  if (type === 'user') {
-    statusDiv.textContent = '👤';
-  } else if (type === 'hint') {
-    statusDiv.textContent = '💡';
-  } else {
-    statusDiv.textContent = '🤖';
-  }
-  
-  // Message bubble
-  const bubbleDiv = document.createElement('div');
-  bubbleDiv.style.padding = '0.875rem 1rem';
-  bubbleDiv.style.borderRadius = '12px';
-  bubbleDiv.style.maxWidth = '85%';
-  bubbleDiv.style.wordWrap = 'break-word';
-  bubbleDiv.style.lineHeight = '1.5';
-  
-  if (type === 'user') {
-    bubbleDiv.style.background = '#0ea5e9';
-    bubbleDiv.style.color = 'white';
-    bubbleDiv.style.textAlign = 'right';
-  } else if (type === 'hint') {
-    bubbleDiv.style.background = '#fef3c7';
-    bubbleDiv.style.color = '#92400e';
-    bubbleDiv.style.borderLeft = '3px solid #f59e0b';
-    bubbleDiv.style.textAlign = 'left';
-    bubbleDiv.style.fontStyle = 'italic';
-  } else {
-    bubbleDiv.style.background = '#f3f4f6';
-    bubbleDiv.style.color = '#1f2937';
-    bubbleDiv.style.textAlign = 'left';
-  }
-  
-  bubbleDiv.innerHTML = message;
-  
-  if (type === 'user') {
-    messageDiv.appendChild(bubbleDiv);
-    messageDiv.appendChild(statusDiv);
-  } else {
-    messageDiv.appendChild(statusDiv);
-    messageDiv.appendChild(bubbleDiv);
-  }
-  
-  document.getElementById('chat-messages').appendChild(messageDiv);
-  document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
-}
+  async function loginUser() {
+    const email = authEmail.trim();
+    const password = authPassword.trim();
+    if (!email || !password) {
+      setAuthMessage('Email and password required.');
+      return;
+    }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      setAuthMessage('Please enter a valid email address.');
+      return;
+    }
 
-// ===== DEALS SECTION =====
-function loadDeals() {
-  const dealsGrid = document.getElementById('deals-grid');
-  const activeDeals = products.filter(p => p.discount_percent > 20).slice(0, 6);
-  
-  if (activeDeals.length === 0) {
-    dealsGrid.innerHTML = '<p>No active deals at the moment</p>';
-    return;
+    try {
+      const resp = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await resp.json().catch(() => null);
+      if (resp.ok && data && data.success) {
+        setLoggedInUser((data.user && data.user.email) || email);
+        setAuthMessage('Login successful!');
+        setTimeout(() => {
+          setAuthOpen(false);
+          setAuthMessage('');
+        }, 300);
+        return;
+      }
+      setAuthMessage(`Login failed: ${(data && data.error) || `Status ${resp.status}`}`);
+    } catch (e) {
+      setAuthMessage('Login error.');
+    }
   }
-  
-  dealsGrid.innerHTML = activeDeals.map(deal => {
-    return `
-    <div class="deal-card">
-      <div class="product-image-placeholder" style="width:100%;height:180px;background:#f0f0f0;border-radius:6px;margin-bottom:0.5rem;display:flex;align-items:center;justify-content:center;color:#999;">Image</div>
-      <h3>${deal.name}</h3>
-      <div class="price-section">
-        <span class="original-price">Was: $${deal.original_price.toFixed(2)}</span>
-        <span class="current-price">Now: $${Number(deal.price).toFixed(2)}</span>
+
+  function openAIChat() {
+    setAiChatOpen(true);
+    setAiChatMessages(prev => {
+      if (prev.length > 0) return prev;
+      return [{ who: 'bot', text: 'Hi! I am your AI Negotiation Assistant. Ask me about prices or type an offer.' }];
+    });
+  }
+
+  function closeAIChat() {
+    setAiChatOpen(false);
+    setAiChatInput('');
+    setAiChatMessages([]);
+  }
+
+  async function exitAIChat() {
+    try {
+      await fetch(`${API_BASE}/chatbot/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_message: '__session_end__' })
+      });
+    } catch (e) {
+      // Best effort exit notification.
+    }
+
+    setAiChatMessages(prev => [...prev, { who: 'bot', text: 'Session ended. Closing chat.' }]);
+    setTimeout(() => closeAIChat(), 600);
+  }
+
+  async function sendAIChatMessage() {
+    const text = aiChatInput.trim();
+    if (!text) return;
+    setAiChatInput('');
+    setAiChatMessages(prev => [...prev, { who: 'user', text }]);
+
+    try {
+      const resp = await fetch(`${API_BASE}/chatbot/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_message: text })
+      });
+      if (!resp.ok) throw new Error('Chat endpoint error');
+      const data = await resp.json();
+      const reply = (data && (data.reply || data.message)) || 'Sorry, I could not process that right now.';
+      setAiChatMessages(prev => [...prev, { who: 'bot', text: reply }]);
+    } catch (e) {
+      setAiChatMessages(prev => [...prev, { who: 'bot', text: 'Connection issue. Please try again later.' }]);
+    }
+  }
+
+  return (
+    <>
+      <header className="navbar">
+        <div className="navbar-container">
+          <div className="navbar-brand">
+            <h1 className="logo">E-commerceHub</h1>
+            <p className="tagline">Negotiate Better, Save More</p>
+          </div>
+          <nav className="nav-links">
+            <a className="nav-link" onClick={() => setSection('home')}>Home</a>
+            <a className="nav-link" onClick={() => setSection('shop')}>Shop</a>
+            <a className="nav-link" onClick={() => setSection('deals')}>Deals</a>
+          </nav>
+          <div className="header-actions">
+            <button className="cart-btn" onClick={() => setCartOpen(true)}>Cart <span className="cart-count">{cartCount}</span></button>
+            <button className="user-btn" onClick={openAuthModal}>{loggedInUser ? `User: ${loggedInUser}` : 'Login'}</button>
+          </div>
+        </div>
+      </header>
+
+      <section id="home" className="hero-section" style={{ display: section === 'home' ? 'grid' : 'none' }}>
+        <div className="hero-content">
+          <h1>Welcome to E-commerceHub</h1>
+          <p>Shop smarter, negotiate better, and save more on every purchase</p>
+          <button className="btn btn-primary" onClick={() => setSection('shop')}>Start Shopping</button>
+          <p style={{ marginTop: '1rem' }}>{status}</p>
+        </div>
+        <div className="hero-image-placeholder" style={{ width: '100%', maxWidth: '700px', margin: '1.5rem auto' }}>Smart shopping experience</div>
+        <div id="home-product-preview" style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', width: '100%', padding: '0 1rem' }}>
+          {products.slice(0, 6).map(p => (
+            <div key={p.product_id} style={{ minWidth: '220px', padding: '0.75rem', background: '#fff', borderRadius: '8px', boxShadow: '0 4px 12px rgba(2,6,23,0.06)' }}>
+              <div style={{ fontWeight: 700 }}>{p.name}</div>
+              <div style={{ marginTop: '0.5rem' }}>{money(p.price)}</div>
+              <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.4rem' }}>
+                <button className="btn btn-small" onClick={() => setDetailProduct(p)}>Details</button>
+                <button className="btn btn-small" onClick={() => startNegotiation(p)}>Negotiate</button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <aside className="home-aside" style={{ width: '100%', maxWidth: '900px', margin: '2rem auto' }}>
+          <h3>All Available Products</h3>
+          <div className="product-grid" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            {products.map(product => (
+              <ProductCard
+                key={product.product_id}
+                product={product}
+                onDetail={setDetailProduct}
+                onAdd={addToCart}
+                onNegotiate={startNegotiation}
+              />
+            ))}
+          </div>
+        </aside>
+      </section>
+
+      <section id="shop" className="shop-section" style={{ display: section === 'shop' ? 'block' : 'none' }}>
+        <div className="shop-container">
+          <aside className="sidebar">
+            <h3>Filters</h3>
+            <div className="filter-group">
+              <h4>Category</h4>
+              <div className="checkbox-group">
+                {categories.map(cat => (
+                  <label key={cat}>
+                    <input type="checkbox" checked={selectedCats.includes(cat)} onChange={() => toggleCategory(cat)} /> {cat}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="filter-group">
+              <h4>Price Range</h4>
+              <div className="price-filter">
+                <input type="range" min="0" max="5000" value={priceCap} onChange={(e) => setPriceCap(Number(e.target.value))} />
+                <span>{money(priceCap)}</span>
+              </div>
+            </div>
+
+            <div className="filter-group">
+              <h4>Negotiation</h4>
+              <label><input type="checkbox" checked={onlyNegotiable} onChange={(e) => setOnlyNegotiable(e.target.checked)} /> Available only</label>
+            </div>
+
+            <button className="btn btn-secondary" onClick={resetFilters}>Reset Filters</button>
+          </aside>
+
+          <main className="main-content">
+            <div className="sort-bar">
+              <h2>All Products</h2>
+              <div className="sort-options">
+                <select className="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                  <option value="newest">Newest</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="popular">Most Popular</option>
+                  <option value="discount">Highest Discount</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="status">{filteredProducts.length} products found</div>
+            <div className="product-grid">
+              {filteredProducts.map(product => (
+                <ProductCard
+                  key={product.product_id}
+                  product={product}
+                  onDetail={setDetailProduct}
+                  onAdd={addToCart}
+                  onNegotiate={startNegotiation}
+                />
+              ))}
+            </div>
+          </main>
+        </div>
+      </section>
+
+      <section id="deals" className="deals-section" style={{ display: section === 'deals' ? 'block' : 'none' }}>
+        <h2>Active Negotiations</h2>
+        <div className="deals-grid">
+          {deals.map(deal => (
+            <div className="deal-card" key={deal.product_id}>
+              <div className="product-image-placeholder" style={{ width: '100%', height: '180px', background: '#f0f0f0', borderRadius: '6px', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>Image</div>
+              <h3>{deal.name}</h3>
+              <div className="price-section">
+                <span className="original-price">Was: {money(deal.original_price)}</span>
+                <span className="current-price">Now: {money(deal.price)}</span>
+              </div>
+              <div className="savings">You Save: {money(deal.original_price - deal.price)} ({deal.discount_percent}% off)</div>
+              <button className="btn btn-primary" onClick={() => addToCart(deal, 1)} style={{ width: '100%' }}>Grab Deal</button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <footer className="footer">
+        <div className="footer-content">
+          <div className="footer-section">
+            <h4>About Us</h4>
+            <p>NegotiateHub is your smart shopping companion that helps you negotiate better prices.</p>
+          </div>
+          <div className="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+              <li><a onClick={() => setSection('home')}>Home</a></li>
+              <li><a onClick={() => setSection('shop')}>Shop</a></li>
+              <li><a onClick={() => setSection('deals')}>Deals</a></li>
+            </ul>
+          </div>
+        </div>
+      </footer>
+
+      <div className={`modal ${cartOpen ? 'open' : ''}`}>
+        <div className="modal-content cart-modal-content">
+          <div className="modal-header">
+            <h2>Shopping Cart</h2>
+            <button className="modal-close" onClick={() => setCartOpen(false)}>&times;</button>
+          </div>
+          <div className="cart-items">
+            {cart.length === 0 ? <p className="empty-cart">Your cart is empty</p> : cart.map((item, index) => (
+              <div className="cart-item" key={`${item.product_id}-${index}`}>
+                <div className="cart-item-details">
+                  <h4 className="cart-item-title">{item.name}</h4>
+                  <div className="cart-item-meta">
+                    <span>{item.category}</span>
+                    <span className="cart-item-price">{money(item.negotiated_price ?? item.price)}</span>
+                  </div>
+                  <div className="cart-item-qty">
+                    <button className="qty-btn" onClick={() => updateCartQty(index, -1)}>-</button>
+                    <span>{item.quantity}</span>
+                    <button className="qty-btn" onClick={() => updateCartQty(index, 1)}>+</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="cart-summary">
+            <div className="summary-row"><span>Subtotal:</span><span>{money(subtotal)}</span></div>
+            <div className="summary-row"><span>Discount:</span><span>-{money(discount)}</span></div>
+            <div className="summary-row total"><span>Total:</span><span>{money(subtotal - discount)}</span></div>
+            <button className="btn btn-primary" onClick={() => {
+              if (!cart.length) return;
+              alert('Order placed successfully');
+              setCart([]);
+              setCartOpen(false);
+            }}>Proceed to Checkout</button>
+          </div>
+        </div>
       </div>
-      <div class="savings">
-        You Save: $${(deal.original_price - Number(deal.price)).toFixed(2)} (${deal.discount_percent}% off)
+
+      <div className={`modal ${detailProduct ? 'open' : ''}`}>
+        <div className="modal-content product-detail-modal">
+          <button className="modal-close" onClick={() => setDetailProduct(null)}>&times;</button>
+          {detailProduct && (
+            <div className="product-detail-container">
+              <div className="product-image-section">
+                <div style={{ width: '100%', height: '300px', background: '#e2e8f0', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px', color: '#64748b' }}>Image</div>
+              </div>
+              <div className="product-info">
+                <div className="detail-header">
+                  <h2>{detailProduct.name}</h2>
+                  <span className="product-id">{detailProduct.product_id}</span>
+                </div>
+                <div className="price-section">
+                  <span className="original-price">Original: {money(detailProduct.original_price)}</span>
+                  <span className="current-price">Current: {money(detailProduct.price)}</span>
+                </div>
+                <p className="product-description">{detailProduct.description}</p>
+                <div className="quantity-selector">
+                  <label>Quantity:</label>
+                  <div className="qty-input">
+                    <button onClick={() => setDetailQty(q => Math.max(1, q - 1))}>-</button>
+                    <input type="number" value={detailQty} min="1" onChange={(e) => setDetailQty(Math.max(1, Number(e.target.value) || 1))} />
+                    <button onClick={() => setDetailQty(q => q + 1)}>+</button>
+                  </div>
+                </div>
+                <div className="action-buttons">
+                  <button className="btn btn-primary" onClick={() => {
+                    addToCart(detailProduct, detailQty);
+                    setDetailQty(1);
+                    setDetailProduct(null);
+                  }}>Add to Cart</button>
+                  <button className="btn btn-accent" onClick={() => startNegotiation(detailProduct)}>Negotiate Price</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-      <button class="btn btn-primary" onclick="quickAddToCart('${deal.product_id}')" style="width: 100%;">
-        Grab Deal
-      </button>
-    </div>
-  `;
-  }).join('');
+
+      <div className={`modal ${negotiationOpen ? 'open' : ''}`}>
+        <div className="modal-content chat-modal-content">
+          <div className="chat-header">
+            <h3>Price Negotiation - {negotiation?.product.name}</h3>
+            <button className="modal-close" onClick={() => setNegotiationOpen(false)}>&times;</button>
+          </div>
+          <div className="chat-info">
+            <p>Base Price: {money(negotiation?.product.price)}</p>
+            <p>Lowest Possible: {money(negotiation?.minPrice)}</p>
+          </div>
+          <div className="chat-messages">
+            {(negotiation?.messages || []).map((m, idx) => (
+              <div key={idx} style={{ marginBottom: '0.6rem', textAlign: m.type === 'user' ? 'right' : 'left' }}>
+                <div style={{ display: 'inline-block', padding: '0.5rem 0.75rem', borderRadius: '8px', background: m.type === 'user' ? '#0ea5e9' : m.type === 'hint' ? '#fef3c7' : '#f3f4f6', color: m.type === 'user' ? '#fff' : '#111' }}>
+                  {m.text}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="chat-input-area">
+            <div className="price-suggestion">
+              <label>Your Offer: $</label>
+              <input type="number" min="0" step="0.01" value={offerInput} onChange={(e) => setOfferInput(e.target.value)} />
+              <button className="btn btn-primary" onClick={makeOffer}>Make Offer</button>
+            </div>
+            <div style={{ marginTop: '0.75rem' }}>
+              <button className="btn btn-accent" disabled={!negotiation?.latestSuggestedPrice} onClick={acceptNegotiatedPrice}>
+                Accept {money(negotiation?.latestSuggestedPrice)}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className={`modal ${authOpen ? 'open' : ''}`}>
+        <div className="modal-content" style={{ maxWidth: '420px', padding: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', gap: '0.5rem' }}>
+            <h3 style={{ margin: 0 }}>Account</h3>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <button onClick={exitAuthModal} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem' }}>Exit</button>
+              <button onClick={closeAuthModal} style={{ background: 'transparent', border: 'none', fontSize: '1.25rem', cursor: 'pointer' }}>x</button>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '0.5rem', color: '#064e3b', fontStyle: 'italic' }}>{authMessage}</div>
+          <div style={{ display: 'grid', gap: '0.5rem' }}>
+            <input value={authName} onChange={(e) => setAuthName(e.target.value)} placeholder="Full name (optional)" style={{ padding: '0.6rem', border: '1px solid #d1d5db', borderRadius: '6px' }} />
+            <input value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} placeholder="Email" style={{ padding: '0.6rem', border: '1px solid #d1d5db', borderRadius: '6px' }} />
+            <input value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} type="password" placeholder="Password" style={{ padding: '0.6rem', border: '1px solid #d1d5db', borderRadius: '6px' }} onKeyDown={(e) => { if (e.key === 'Enter') loginUser(); }} />
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+              <button className="btn btn-secondary" onClick={registerUser}>Register</button>
+              <button className="btn btn-primary" onClick={loginUser}>Login</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ position: 'fixed', right: '20px', bottom: '20px', zIndex: 1000 }}>
+        <button aria-label="Open AI Chat" onClick={openAIChat} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: '9999px', padding: '14px 16px', boxShadow: '0 8px 24px rgba(2,6,23,0.2)', cursor: 'pointer' }}>
+          AI Chat
+        </button>
+      </div>
+
+      <div className={`modal ${aiChatOpen ? 'open' : ''}`}>
+        <div className="modal-content" style={{ maxWidth: '420px', padding: '1rem' }}>
+          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', gap: '0.5rem' }}>
+            <h3 style={{ margin: 0 }}>AI Negotiation Assistant</h3>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <button onClick={exitAIChat} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem' }}>Exit</button>
+              <button onClick={closeAIChat} style={{ background: 'transparent', border: 'none', fontSize: '1.25rem', cursor: 'pointer' }}>x</button>
+            </div>
+          </header>
+          <div style={{ height: '320px', overflow: 'auto', padding: '0.5rem', border: '1px solid #e5e7eb', borderRadius: '8px', background: '#fff', marginBottom: '0.75rem' }}>
+            {aiChatMessages.map((m, index) => (
+              <div key={`${m.who}-${index}`} style={{ marginBottom: '0.6rem', textAlign: m.who === 'user' ? 'right' : 'left' }}>
+                <div style={{ display: 'inline-block', background: m.who === 'user' ? '#0ea5e9' : '#f3f4f6', color: m.who === 'user' ? '#fff' : '#111', padding: '0.5rem 0.75rem', borderRadius: '8px' }}>
+                  {m.text}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <input value={aiChatInput} onChange={(e) => setAiChatInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') sendAIChatMessage(); }} placeholder="Type your message or offer..." style={{ flex: 1, padding: '0.65rem', border: '1px solid #d1d5db', borderRadius: '8px' }} />
+            <button onClick={sendAIChatMessage} style={{ background: '#06b6d4', color: '#fff', border: 'none', padding: '0.6rem 0.9rem', borderRadius: '8px' }}>Send</button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
 
-// ===== SECTION NAVIGATION =====
-function showSection(sectionId) {
-  document.querySelectorAll('section').forEach(section => {
-    section.style.display = 'none';
-  });
-  
-  const section = document.getElementById(sectionId);
-  if (section) {
-    section.style.display = 'block';
-    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
