@@ -15,10 +15,10 @@ NOTIFY_EMAIL = os.environ.get('NOTIFY_EMAIL', 'mdkamran9708@gmail.com')
 FROM_EMAIL = os.environ.get('FROM_EMAIL', 'no-reply@negotiatehub.local')
 
 # SMTP Configuration - set these in environment or edit here
-SMTP_HOST = os.environ.get('SMTP_HOST', '')  # e.g. smtp.gmail.com
-SMTP_PORT = int(os.environ.get('SMTP_PORT', '0'))  # e.g. 587
-SMTP_USER = os.environ.get('SMTP_USER', '')
-SMTP_PASS = os.environ.get('SMTP_PASS', '')
+SMTP_HOST = os.environ.get('SMTP_HOST', 'smtp.gmail.com')  # e.g. smtp.gmail.com
+SMTP_PORT = int(os.environ.get('SMTP_PORT', '587'))  # e.g. 587
+SMTP_USER = os.environ.get('SMTP_USER', 'mdkamran9708@gmail.com')
+SMTP_PASS = os.environ.get('SMTP_PASS', 'pdbu ypoh bhky ltxx')
 
 # Local fallback log path
 LOG_DIR = Path(__file__).resolve().parents[0] / 'logs'

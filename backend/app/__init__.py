@@ -3,6 +3,7 @@ from flask_cors import CORS
 from .routes.products import products_bp
 from .routes.chatbot import chatbot_bp
 from .routes.auth import auth_bp
+from .routes.payment import payment_bp
 from pathlib import Path
 
 
@@ -21,6 +22,7 @@ def create_app():
     app.register_blueprint(products_bp, url_prefix="/products")
     app.register_blueprint(chatbot_bp, url_prefix="/chatbot")
     app.register_blueprint(auth_bp, url_prefix="/auth")
+    app.register_blueprint(payment_bp, url_prefix="/payment")
 
     @app.route("/")
     def index():
