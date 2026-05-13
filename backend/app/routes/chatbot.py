@@ -85,59 +85,90 @@ def get_models():
 # ==================== FREE-FORM CHAT ENDPOINT ====================
 @chatbot_bp.route("/chat", methods=["POST"])
 def chat_endpoint():
-    """Simple retrieval-style chat endpoint.
-
-    It attempts to load a TF-IDF vectorizer + NearestNeighbors model saved by the
-    training script. If unavailable, it falls back to helpful canned responses.
+    """
+    AI-powered chat endpoint using Claude API.
+    Answers product questions, price queries, negotiation tips — everything!
     """
     try:
+        import urllib.request
+        import json as _json
+
         payload = request.get_json(force=True, silent=True) or {}
         user_message = payload.get("user_message", "").strip()
         if not user_message:
             return jsonify({"success": False, "error": "user_message required"}), 400
 
-        models_dir = Path(__file__).resolve().parents[2] / "models"
-        vec_path = models_dir / "dialogue_vectorizer.joblib"
-        knn_path = models_dir / "dialogue_knn.joblib"
-        resp_path = models_dir / "dialogue_responses.json"
+        # Fetch all products for context
+        try:
+            with get_conn() as conn:
+                rows = conn.execute(
+                    "SELECT name, price, category, description FROM products LIMIT 50"
+                ).fetchall()
+            products_list = "\n".join([
+                f"- {r['name']} | ${r['price']:.2f} | {r['category']} | {r['description'][:60]}"
+                for r in rows
+            ])
+        except Exception:
+            products_list = "Product data unavailable"
 
-        if vec_path.exists() and knn_path.exists() and resp_path.exists():
-            try:
-                vectorizer = joblib.load(vec_path)
-                knn = joblib.load(knn_path)
-                with open(resp_path, "r", encoding="utf-8") as fh:
-                    responses = json.load(fh)
+        # System prompt — NegotiateHub assistant
+        system_prompt = f"""You are an AI shopping assistant for NegotiateHub, a smart e-commerce platform where users can negotiate prices.
 
-                Xq = vectorizer.transform([user_message])
-                dist, idx = knn.kneighbors(Xq, n_neighbors=1)
-                index = int(idx[0][0])
-                reply = responses[index]
-                return jsonify({"success": True, "reply": reply}), 200
-            except Exception as e:
-                print(f"⚠️ Dialogue retrieval error: {e}")
+Your job:
+- Answer questions about products, prices, categories
+- Help users understand how to negotiate
+- Suggest fair offer prices (typically 10-20% below listed price)
+- Be friendly, helpful, and concise (2-3 sentences max)
+- Reply in the same language the user uses (Hindi/English/Hinglish)
 
-        # Fallback heuristics
-        # If user mentions a dollar amount, give a negotiation tip
-        import re
-        m = re.search(r"\$?([0-9]+(?:\.[0-9]{1,2})?)", user_message)
-        if m:
-            amount = float(m.group(1))
-            return jsonify({
-                "success": True,
-                "reply": f"I see you mentioned ${amount:.2f}. To negotiate, please open the product page and make an offer, or include the product id and your offer in the message." 
-            }), 200
+Current products available:
+{products_list}
 
-        # Generic helpful replies
-        canned = [
-            "Hi! I can help you negotiate product prices — open a product and propose an offer.",
-            "Ask me to suggest a counteroffer if you provide a product id and your offer (e.g. product_id=1, offer=$60).",
-            "I can estimate a fair counteroffer based on past negotiations. Try offering a price for a specific product."
-        ]
-        return jsonify({"success": True, "reply": random.choice(canned)}), 200
+Rules:
+- Never make up products not in the list
+- For negotiation, tell users to click the "Negotiate" button on the product card
+- Keep responses short and conversational"""
+
+        # Call Gemini API
+        GEMINI_API_KEY = "AIzaSyBaT7_RU6yM7IxFe_g6vNFtGOaXVcpKnV8"
+        GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+
+        api_payload = _json.dumps({
+            "system_instruction": {
+                "parts": [{"text": system_prompt}]
+            },
+            "contents": [
+                {"parts": [{"text": user_message}]}
+            ],
+            "generationConfig": {
+                "maxOutputTokens": 300,
+                "temperature": 0.7
+            }
+        }).encode("utf-8")
+
+        req = urllib.request.Request(
+            GEMINI_URL,
+            data=api_payload,
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            result = _json.loads(resp.read().decode("utf-8"))
+
+        reply = result["candidates"][0]["content"]["parts"][0]["text"]
+        print(f"Gemini AI reply generated for: {user_message[:50]}")
+        return jsonify({"success": True, "reply": reply}), 200
 
     except Exception as e:
         print(f"❌ Chat endpoint error: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
+        # Fallback agar API fail ho
+        fallback_replies = [
+            "Hi! I can help you negotiate product prices — open a product and click Negotiate button.",
+            "Products ke baare mein poochho ya kisi product pe negotiate karo — Negotiate button click karo!",
+            "I can help with product prices and negotiation. Click 'Negotiate' on any product to start!"
+        ]
+        return jsonify({"success": True, "reply": random.choice(fallback_replies)}), 200
 
 
 # ==================== NEGOTIATION MESSAGE GENERATOR ====================

@@ -1,0 +1,10 @@
+{
+  "svr_mae": 5.796921824431637,
+  "knn_mae": 1.7303831494430475,
+  "samples": 50,
+  "features": [
+    "base_price",
+    "user_offer"
+  ],
+  "target": "negotiated_price"
+}
