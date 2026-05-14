@@ -1,0 +1,51 @@
+Product ID,Product Name,Description,Price,Negotiable,Discount (%),Negotiated Price,Size,Category,Color,Material,Image
+1,Backpack,Premium quality backpack. Best value product with excellent quality and durability.,21.49,False,5,20.42,M,Home,Mixed,Premium,Backpack.webp
+2,Bedsheet Set,Premium quality bedsheet set. Best value product with excellent quality and durability.,22.99,True,10,20.69,M,Sports,Mixed,Premium,Bedsheet Set.webp
+3,Blender,Premium quality blender. Best value product with excellent quality and durability.,24.49,False,15,20.82,M,Books,Mixed,Premium,Blender.png
+4,Bluetooth Speaker,Premium quality bluetooth speaker. Best value product with excellent quality and durability.,25.99,True,20,20.79,M,Clothing,Mixed,Premium,Bluetooth Speaker.webp
+5,Bookshelf,Premium quality bookshelf. Best value product with excellent quality and durability.,27.49,False,0,27.49,M,Accessories,Mixed,Premium,Bookshelf.webp
+6,Cloud Computing,Premium quality cloud computing. Best value product with excellent quality and durability.,28.99,True,5,27.54,M,Electronics,Mixed,Premium,Cloud Computing.jpg
+7,Comforter,Premium quality comforter. Best value product with excellent quality and durability.,30.49,False,10,27.44,M,Home,Mixed,Premium,Comforter.webp
+8,Curtains,Premium quality curtains. Best value product with excellent quality and durability.,31.99,True,15,27.19,M,Sports,Mixed,Premium,Curtains.webp
+9,Database Design,Premium quality database design. Best value product with excellent quality and durability.,33.49,False,20,26.79,M,Books,Mixed,Premium,Database Design.jpg
+10,Desk Chair,Premium quality desk chair. Best value product with excellent quality and durability.,34.99,True,0,34.99,M,Clothing,Mixed,Premium,Desk Chair.jpg
+11,Dumbbell Set,Premium quality dumbbell set. Best value product with excellent quality and durability.,36.49,False,5,34.67,M,Accessories,Mixed,Premium,Dumbbell Set.webp
+12,Electric Kettle,Premium quality electric kettle. Best value product with excellent quality and durability.,37.99,True,10,34.19,M,Electronics,Mixed,Premium,Electric Kettle.jpg
+13,Graphics Card,Premium quality graphics card. Best value product with excellent quality and durability.,39.49,False,15,33.57,M,Home,Mixed,Premium,Graphics Card.jpg
+14,Gym Bag,Premium quality gym bag. Best value product with excellent quality and durability.,40.99,True,20,32.79,M,Sports,Mixed,Premium,Gym Bag.avif
+15,Hoodie,Premium quality hoodie. Best value product with excellent quality and durability.,42.49,False,0,42.49,M,Books,Mixed,Premium,Hoodie.webp
+16,JavaScript Guide,Premium quality javascript guide. Best value product with excellent quality and durability.,43.99,True,5,41.79,M,Clothing,Mixed,Premium,JavaScript Guide.jpg
+17,Jeans,Premium quality jeans. Best value product with excellent quality and durability.,45.49,False,10,40.94,M,Accessories,Mixed,Premium,Jeans.webp
+18,Leather Belt,Premium quality leather belt. Best value product with excellent quality and durability.,46.99,True,15,39.94,M,Electronics,Mixed,Premium,Leather Belt.jpg
+19,Mechanical Keyboard,Premium quality mechanical keyboard. Best value product with excellent quality and durability.,48.49,False,20,38.79,M,Home,Mixed,Premium,Mechanical Keyboard.webp
+20,Microwave,Premium quality microwave. Best value product with excellent quality and durability.,49.99,True,0,49.99,M,Sports,Mixed,Premium,Microwave.avif
+21,Mirror,Premium quality mirror. Best value product with excellent quality and durability.,51.49,False,5,48.92,M,Books,Mixed,Premium,Mirror.webp
+22,Monitor,Premium quality monitor. Best value product with excellent quality and durability.,52.99,True,10,47.69,M,Clothing,Mixed,Premium,Monitor.webp
+23,Mouse Pad,Premium quality mouse pad. Best value product with excellent quality and durability.,54.49,False,15,46.32,M,Accessories,Mixed,Premium,Mouse Pad.webp
+24,Phone Stand,Premium quality phone stand. Best value product with excellent quality and durability.,55.99,True,20,44.79,M,Electronics,Mixed,Premium,Phone Stand.jpg
+25,Pillow Set,Premium quality pillow set. Best value product with excellent quality and durability.,57.49,False,0,57.49,M,Home,Mixed,Premium,Pillow Set.avif
+26,Power Bank 20000mAh,Premium quality power bank 20000mah. Best value product with excellent quality and durability.,58.99,True,5,56.04,M,Sports,Mixed,Premium,Power Bank 20000mAh.webp
+27,Python Programming,Premium quality python programming. Best value product with excellent quality and durability.,60.49,False,10,54.44,M,Books,Mixed,Premium,Python Programming.png
+28,RAM 16GB,Premium quality ram 16gb. Best value product with excellent quality and durability.,61.99,True,15,52.69,M,Clothing,Mixed,Premium,RAM 16GB.jpg
+29,Resistance Bands,Premium quality resistance bands. Best value product with excellent quality and durability.,63.49,False,20,50.79,M,Accessories,Mixed,Premium,Resistance Bands.webp
+30,SSD 1TB,Premium quality ssd 1tb. Best value product with excellent quality and durability.,64.99,True,0,64.99,M,Electronics,Mixed,Premium,SSD 1TB.jpg
+31,Screen Protector,Premium quality screen protector. Best value product with excellent quality and durability.,66.49,False,5,63.17,M,Home,Mixed,Premium,Screen Protector.webp
+32,Smartphone Case,Premium quality smartphone case. Best value product with excellent quality and durability.,67.99,True,10,61.19,M,Sports,Mixed,Premium,Smartphone Case.webp
+33,Sports Socks Set,Premium quality sports socks set. Best value product with excellent quality and durability.,69.49,False,15,59.07,M,Books,Mixed,Premium,Sports Socks Set.jpg
+34,Sunglasses,Premium quality sunglasses. Best value product with excellent quality and durability.,70.99,True,20,56.79,M,Clothing,Mixed,Premium,Sunglasses.avif
+35,Toaster,Premium quality toaster. Best value product with excellent quality and durability.,72.49,False,0,72.49,M,Accessories,Mixed,Premium,Toaster.webp
+36,USB Hub,Premium quality usb hub. Best value product with excellent quality and durability.,73.99,True,5,70.29,M,Electronics,Mixed,Premium,USB Hub.webp
+37,Vacuum Cleaner,Premium quality vacuum cleaner. Best value product with excellent quality and durability.,75.49,False,10,67.94,M,Home,Mixed,Premium,Vacuum Cleaner.webp
+38,Watch,Premium quality watch. Best value product with excellent quality and durability.,76.99,True,15,65.44,M,Sports,Mixed,Premium,Watch.webp
+39,Water Bottle,Premium quality water bottle. Best value product with excellent quality and durability.,78.49,False,20,62.79,M,Books,Mixed,Premium,Water Bottle.webp
+40,Webcam 1080p,Premium quality webcam 1080p. Best value product with excellent quality and durability.,79.99,True,0,79.99,M,Clothing,Mixed,Premium,Webcam 1080p.webp
+41,Winter Jacket,Premium quality winter jacket. Best value product with excellent quality and durability.,81.49,False,5,77.42,M,Accessories,Mixed,Premium,Winter Jacket.webp
+42,book,Premium quality book. Best value product with excellent quality and durability.,82.99,True,10,74.69,M,Electronics,Mixed,Premium,book.png
+43,coffee maker,Premium quality coffee maker. Best value product with excellent quality and durability.,84.49,False,15,71.82,M,Home,Mixed,Premium,coffee maker.jpg
+44,data cable,Premium quality data cable. Best value product with excellent quality and durability.,85.99,True,20,68.79,M,Sports,Mixed,Premium,data cable.jpeg
+45,lamp,Premium quality lamp. Best value product with excellent quality and durability.,87.49,False,0,87.49,M,Books,Mixed,Premium,lamp.webp
+46,laptop bag,Premium quality laptop bag. Best value product with excellent quality and durability.,88.99,True,5,84.54,M,Clothing,Mixed,Premium,laptop bag.jpg
+47,shoes,Premium quality shoes. Best value product with excellent quality and durability.,90.49,False,10,81.44,M,Accessories,Mixed,Premium,shoes.webp
+48,tshirt,Premium quality tshirt. Best value product with excellent quality and durability.,91.99,True,15,78.19,M,Electronics,Mixed,Premium,tshirt.png
+49,wireless headphone,Premium quality wireless headphone. Best value product with excellent quality and durability.,93.49,False,20,74.79,M,Home,Mixed,Premium,wireless headphone.webp
+50,yoga_mat,Premium quality yoga_mat. Best value product with excellent quality and durability.,19.99,True,0,19.99,M,Sports,Mixed,Premium,yoga_mat.jpg
