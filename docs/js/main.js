@@ -1,13 +1,6 @@
 const { useEffect, useMemo, useState } = React;
 
-const API_BASE = (() => {
-  try {
-    const host = location.hostname || 'localhost';
-    return `${location.protocol}//${host}:5000`;
-  } catch (e) {
-    return 'http://localhost:5000';
-  }
-})();
+const API_BASE = 'https://negotiatehub.onrender.com';
 
 const SAMPLE_PRODUCTS = [
   { product_id: '1', id: 1, name: 'Wireless Headphones', price: 79.99, category: 'Electronics', description: 'Premium wireless headphones', negotiation_available: true },
